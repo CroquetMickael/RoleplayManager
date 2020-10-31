@@ -5,7 +5,7 @@ import { UserContext } from "../Shared/UserContext";
 const Game = () => {
   const { roomName } = useParams();
   const { socket } = useContext(SocketContext);
-  const { playerName } = useContext(UserContext);
+  const { playerName, roomPassword } = useContext(UserContext);
   const [roomInformation, setRoomInformation] = useState();
   const navigate = useNavigate();
   const isRoomInformationOk = () => {
@@ -22,7 +22,7 @@ const Game = () => {
   };
 
   useEffect(() => {
-    socket.emit("joinRoom", { playerName, roomName });
+    socket.emit("joinRoom", { playerName, roomName, roomPassword });
     const interval2 = setInterval(() => {
       socket.on("wrongPassword", () => {
         navigate("/");

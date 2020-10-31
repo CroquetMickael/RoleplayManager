@@ -2,10 +2,16 @@ import "./Root.css";
 import { Route, Routes } from "react-router-dom";
 import { Index } from "./Index/index";
 import { Game } from "./Game/Game";
+import { Layout } from "../Layout/Layout";
+const LayoutRoute = ({ path, element }) => (
+  <Layout>
+    <Route path={path} element={element}></Route>
+  </Layout>
+);
 const Root = () => (
   <Routes>
-    <Route path="/" element={<Index />}></Route>
-    <Route path="/game/:roomName" element={<Game />}></Route>
+    <LayoutRoute path="/" element={<Index />} />
+    <Route path="/game/:roomName" element={<Game />} />
   </Routes>
 );
 

@@ -19,12 +19,15 @@ const UserProvider = (props) => {
     "playername",
     ""
   );
+  const [roomPassword, setRoomPassword] = useState("");
 
   return (
     <UserContext.Provider
       value={{
         playerName,
         setPlayerName,
+        roomPassword,
+        setRoomPassword,
       }}
     >
       {props.children}
