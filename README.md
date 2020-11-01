@@ -1,0 +1,2 @@
+# RoleplayManager
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4ead4be6ff3f4c03a91703f08ba97a11)](https://app.codacy.com/gh/CroquetMickael/RoleplayManager?utm_source=github.com&utm_medium=referral&utm_content=CroquetMickael/RoleplayManager&utm_campaign=Badge_Grade)
