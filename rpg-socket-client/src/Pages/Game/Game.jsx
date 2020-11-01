@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
-import { SocketContext } from "../Shared/SocketContext";
+import { SocketContext } from "../Shared/Context/SocketContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { UserContext } from "../Shared/UserContext";
+import { UserContext } from "../Shared/Context/UserContext";
 const Game = () => {
   const { roomName } = useParams();
   const { socket } = useContext(SocketContext);
-  const { playerName, roomPassword } = useContext(UserContext);
+  const { playerName } = useContext(UserContext);
   const [roomInformation, setRoomInformation] = useState();
   const navigate = useNavigate();
   const isRoomInformationOk = () => {
@@ -22,9 +22,11 @@ const Game = () => {
   };
 
   useEffect(() => {
-    socket.emit("joinRoom", { playerName, roomName, roomPassword });
+    setTimeout(() => {
+      socket.emit("checkPlayer", { roomName, playerName });
+    }, 500);
     const interval2 = setInterval(() => {
-      socket.on("wrongPassword", () => {
+      socket.on("playerNotAllowed", () => {
         navigate("/");
       });
       socket.emit("getRoomInformation", roomName);
