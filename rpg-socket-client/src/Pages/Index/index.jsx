@@ -35,15 +35,16 @@ const Index = () => {
 
   return (
     <>
-      <div className="grid grid-cols-3 xl:grid-cols-6 gap-4 auto-rows-max">
+      <div className="grid grid-cols-3 gap-4 xl:grid-cols-6 auto-rows-max">
         {rooms !== undefined
           ? Object.keys(rooms).map((roomName) => (
               <CardGame
+                key={roomName}
                 players={rooms[roomName].players}
                 roomName={roomName}
                 playersNumber={rooms[roomName].players.length}
                 maxPlayer={rooms[roomName].maxPlayer}
-                onClick={() =>   joinRoom(roomName)}
+                onClick={() => joinRoom(roomName)}
               />
             ))
           : null}

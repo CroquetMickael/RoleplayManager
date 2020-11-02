@@ -1,7 +1,7 @@
 const http = require("http");
 const socketIo = require("socket.io");
 const express = require("express");
-const { getRoom } = require("./roomHelper");
+const { getRoom, isRoomExist } = require("./roomHelper");
 
 const port = process.env.PORT || 4001;
 
@@ -20,18 +20,20 @@ socket.on("connection", (socket) => {
     }
     const { playerName, roomName, roomPassword } = roomInformation;
     const room = getRoom(rooms, roomName);
-    if (room.password !== roomPassword) {
-      socket.emit("wrongPassword");
-      return;
+    if (room) {
+      if (room.password !== roomPassword) {
+        socket.emit("wrongPassword");
+        return;
+      }
+      if (room.players.length + 1 > room.maxPlayer) {
+        return;
+      }
+      if (!room.players.some((player) => player.name === playerName)) {
+        room.players = [...room.players, { name: playerName }];
+      }
+      socket.join(roomName);
+      socket.emit("roomJoined");
     }
-    if (room.players.length + 1 > room.maxPlayer) {
-      return;
-    }
-    if (!room.players.some((player) => player.name === playerName)) {
-      room.players = [...room.players, { name: playerName }];
-    }
-    socket.join(roomName);
-    socket.emit("roomJoined");
   });
 
   socket.on("checkPlayer", function (roomInformation) {
@@ -40,25 +42,35 @@ socket.on("connection", (socket) => {
     }
     const { playerName, roomName } = roomInformation;
     const room = getRoom(rooms, roomName);
-    if (!room.players.some(
-      (player) => player.owner === true && player.name === playerName
-    )) {
-      const currentPlayers = room.players.filter((name) => name == playerName);
-      if (currentPlayers.length === 0) {
-        socket.emit("playerNotAllowed");
+    if (room) {
+      if (
+        !room.players.some(
+          (player) => player.owner === true && player.name === playerName
+        )
+      ) {
+        const currentPlayers = room.players.filter(
+          (player) => player.name === playerName
+        );
+        if (currentPlayers.length === 0) {
+          socket.emit("playerNotAllowed");
+        }
       }
     }
-  })
+  });
   socket.on("leaveRoom", function (roomInformation) {
     if (!roomInformation) {
       return;
     }
     const { playerName, roomName } = roomInformation;
     const room = getRoom(rooms, roomName);
-    room.players = room.players.filter((name) => name != playerName);
-    socket.leave(roomName);
-    if (room.players.length <= 0) {
-      delete rooms[roomName];
+    if (room) {
+      room.players = room.players.filter(
+        (player) => player.name !== playerName
+      );
+      socket.leave(roomName);
+      if (room.players.length <= 0) {
+        delete rooms[roomName];
+      }
     }
   });
 
@@ -68,7 +80,7 @@ socket.on("connection", (socket) => {
     const { playerName, roomName, maxPlayer } = roomInformation;
     socket.join(roomName);
     rooms[roomName] = {
-      maxPlayer: maxPlayer,
+      maxPlayer: Number(maxPlayer),
       players: [{ name: playerName, owner: true }],
       password: generateRoomPassword(),
     };
