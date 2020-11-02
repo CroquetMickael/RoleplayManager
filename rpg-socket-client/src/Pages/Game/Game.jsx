@@ -1,30 +1,37 @@
 import React, { useContext, useEffect, useState } from "react";
-import { SocketContext } from "../Shared/SocketContext";
+import { SocketContext } from "../Shared/Context/SocketContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { UserContext } from "../Shared/UserContext";
+import { UserContext } from "../Shared/Context/UserContext";
+import { PersonView } from "./Component/PersonView/PersonView";
+import { GameInformation } from "./Component/GameInformation/GameInformation";
+
 const Game = () => {
   const { roomName } = useParams();
   const { socket } = useContext(SocketContext);
-  const { playerName, roomPassword } = useContext(UserContext);
+  const { playerName } = useContext(UserContext);
   const [roomInformation, setRoomInformation] = useState();
   const navigate = useNavigate();
-  const isRoomInformationOk = () => {
-    if (roomInformation === undefined) {
-      return false;
-    }
-    if (roomInformation.players === undefined) {
-      return false;
-    }
-    if (roomInformation.players.length <= 0) {
-      return false;
-    }
-    return true;
-  };
-
   useEffect(() => {
-    socket.emit("joinRoom", { playerName, roomName, roomPassword });
+    const isRoomInformationOk = () => {
+      if (roomInformation === undefined) {
+        return false;
+      }
+      if (roomInformation.players === undefined) {
+        return false;
+      }
+      if (roomInformation.players.length <= 0) {
+        return false;
+      }
+      return true;
+    };
+    setTimeout(() => {
+      socket.emit("checkPlayer", { roomName, playerName });
+    }, 500);
+    document.addEventListener("beforeunload", () =>
+      socket.emit("leaveRoom", { playerName, roomName })
+    );
     const interval2 = setInterval(() => {
-      socket.on("wrongPassword", () => {
+      socket.on("playerNotAllowed", () => {
         navigate("/");
       });
       socket.emit("getRoomInformation", roomName);
@@ -36,19 +43,14 @@ const Game = () => {
       });
     }, 1000);
     return () => {
-      socket.emit("leaveRoom", { playerName, roomName });
       clearInterval(interval2);
+      socket.emit("leaveRoom", { playerName, roomName });
     };
-  }, []);
+  }, [playerName, roomName, socket]);
   return (
     <div>
-      Game name: {roomName}
-      <br />
-      players :{" "}
-      {roomInformation?.players?.map((player, index) => (
-        <span key={player}>{player.name} </span>
-      ))}
-      room password : {roomInformation?.password}
+      <GameInformation roomName={roomName} roomInformation={roomInformation} />
+      <PersonView roomInformation={roomInformation} playerName={playerName} />
     </div>
   );
 };
