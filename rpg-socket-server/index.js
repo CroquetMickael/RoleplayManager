@@ -66,7 +66,6 @@ socket.on("connection", (socket) => {
         }
       }
     }
-    socket.join(roomName);
   });
 
   socket.on("useSpell", function (Information) {

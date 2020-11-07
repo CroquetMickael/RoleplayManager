@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
-import { SocketContext } from "../Shared/SocketContext";
+import { SocketContext } from "../Shared/Context/SocketContext";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../Shared/UserContext";
+import { UserContext } from "../Shared/Context/UserContext";
 import { CardGame } from "./Components/Card";
 const Index = () => {
   const [rooms, setRooms] = useState();
@@ -11,12 +11,7 @@ const Index = () => {
   const [roomPassword, setRoomPassword] = useState("");
   const navigation = useNavigate();
   const { socket } = useContext(SocketContext);
-  const {
-    playerName,
-    setPlayerName,
-    roomPassword,
-    setRoomPassword,
-  } = useContext(UserContext);
+  const { playerName, setPlayerName } = useContext(UserContext);
   useEffect(() => {
     const interval = setInterval(() => {
       if (socket != null) {
@@ -28,7 +23,6 @@ const Index = () => {
         socket.on("rooms", (data) => {
           setRooms(data);
         });
-        console.log(rooms);
       }
     }, 1000);
 
@@ -37,16 +31,25 @@ const Index = () => {
     };
   }, [socket]);
 
+  const joinRoom = (roomName) => {
+    socket.emit("joinRoom", { playerName, roomName, roomPassword });
+    socket.on("roomJoined", () => {
+      navigation(`/game/${roomName}`);
+    });
+  };
+
   return (
     <>
-      <div className="flex flex-wrap">
+      <div className="grid grid-cols-3 gap-4 xl:grid-cols-6 auto-rows-max">
         {rooms !== undefined
           ? Object.keys(rooms).map((roomName) => (
               <CardGame
+                key={roomName}
                 players={rooms[roomName].players}
                 roomName={roomName}
                 playersNumber={rooms[roomName].players.length}
-                roomMaxPlayer={4}
+                maxPlayer={rooms[roomName].maxPlayer}
+                onClick={() => joinRoom(roomName)}
               />
             ))
           : null}
@@ -56,6 +59,11 @@ const Index = () => {
           placeholder="Password of the room"
           value={roomPassword}
           onChange={(event) => setRoomPassword(event.target.value)}
+        ></input>
+        <input
+          placeholder="Number max of player for room"
+          value={maxPlayer}
+          onChange={(event) => setMaxPlayer(event.target.value)}
         ></input>
         <input
           placeholder="Name of the room"
@@ -69,7 +77,7 @@ const Index = () => {
         ></input>
         <button
           onClick={() => {
-            socket.emit("createRoom", { playerName, roomName });
+            socket.emit("createRoom", { playerName, roomName, maxPlayer });
             navigation(`/game/${roomName}`);
           }}
         >

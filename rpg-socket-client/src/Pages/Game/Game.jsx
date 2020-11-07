@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { SocketContext } from "../Shared/SocketContext";
+import { SocketContext } from "../Shared/Context/SocketContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../Shared/Context/UserContext";
 import { GameInformation } from "./Component/GameView/GameInformation";
@@ -11,26 +11,13 @@ import { useAlert } from "../Shared/Hooks/AlertHooks";
 const Game = () => {
   const { roomName } = useParams();
   const { socket } = useContext(SocketContext);
-  const { playerName, roomPassword } = useContext(UserContext);
+  const { playerName } = useContext(UserContext);
   const [roomInformation, setRoomInformation] = useState();
   const [isOwner, setIsOwner] = useState(false);
   const { Modal, ShowAndSetModalContent } = useModal();
   const { Alert, ShowAndSetAlertContent } = useAlert();
 
   const navigate = useNavigate();
-  const isRoomInformationOk = () => {
-    if (roomInformation === undefined) {
-      return false;
-    }
-    if (roomInformation.players === undefined) {
-      return false;
-    }
-    if (roomInformation.players.length <= 0) {
-      return false;
-    }
-    return true;
-  };
-
   useEffect(() => {
     const isRoomInformationOk = () => {
       if (roomInformation === undefined) {
@@ -48,7 +35,7 @@ const Game = () => {
       socket.emit("checkPlayer", { roomName, playerName });
     }, 500);
     const interval2 = setInterval(() => {
-      socket.on("wrongPassword", () => {
+      socket.on("playerNotAllowed", () => {
         navigate("/");
       });
       socket.emit("getRoomInformation", roomName);
@@ -60,8 +47,8 @@ const Game = () => {
       });
     }, 1000);
     return () => {
-      socket.emit("leaveRoom", { playerName, roomName });
       clearInterval(interval2);
+      socket.emit("leaveRoom", { playerName, roomName });
     };
   }, [playerName, roomName, socket]);
 
