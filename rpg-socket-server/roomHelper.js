@@ -5,7 +5,14 @@ const getRoom = (rooms, roomName) => {
   return rooms[roomName];
 };
 
+const ExcedMaxPlayer = (room, maxPlayer) => {
+  if (room.players.length + 1 > room.maxPlayer) {
+    return true;
+  }
+  return false;
+};
 
 module.exports = {
-    getRoom
-}
+  getRoom,
+  ExcedMaxPlayer
+};

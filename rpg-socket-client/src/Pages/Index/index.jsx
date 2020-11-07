@@ -6,6 +6,9 @@ import { CardGame } from "./Components/Card";
 const Index = () => {
   const [rooms, setRooms] = useState();
   const [roomName, setRoomName] = useState("");
+  const [playersName, setPlayersName] = useState("");
+  const [maxPlayer, setMaxPlayer] = useState("");
+  const [roomPassword, setRoomPassword] = useState("");
   const navigation = useNavigate();
   const { socket } = useContext(SocketContext);
   const {
@@ -18,6 +21,10 @@ const Index = () => {
     const interval = setInterval(() => {
       if (socket != null) {
         socket.emit("getRooms");
+        socket.emit("getPlayersName");
+        socket.on("playersName", (data) => {
+
+        })
         socket.on("rooms", (data) => {
           setRooms(data);
         });
