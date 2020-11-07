@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import socketIOClient from "socket.io-client";
-const ENDPOINT = "https://roleplay-manager-client.herokuapp.com";
+const ENDPOINT = "https://roleplay-manager-server.herokuapp.com";
 
 const SocketContext = React.createContext(null);
 
