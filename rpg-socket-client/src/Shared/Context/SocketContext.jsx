@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import socketIOClient from "socket.io-client";
-const ENDPOINT = "http://127.0.0.1:4001";
 
+let ENDPOINT = "";
+
+if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+  ENDPOINT = "http://127.0.0.1:4001";
+} else {
+  ENDPOINT = "https://roleplay-manager-server.herokuapp.com";
+ 
+}
+console.log(ENDPOINT);
 const SocketContext = React.createContext(null);
 
 const SocketProvider = (props) => {
