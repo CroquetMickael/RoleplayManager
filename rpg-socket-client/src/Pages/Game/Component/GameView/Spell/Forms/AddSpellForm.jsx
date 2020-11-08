@@ -1,43 +1,55 @@
-import React, { useState } from "react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { ErrorForm } from "../../../../../../Shared/Component/ErrorForm/ErrorForm";
 
 const SpellForm = ({ addSpell }) => {
-  const [spellName, setSpellName] = useState("");
-  const [spellCooldown, setSpellCooldown] = useState("");
-  const [spellDescription, setSpellDescription] = useState("");
+  const { handleSubmit, register, errors } = useForm();
 
-  const addSpellCall = (spellName, spellCooldown, spellDescription) => {
+  const addSpellCall = ({ spellName, spellCooldown, spellDescription }) => {
     addSpell(spellName, spellCooldown, spellDescription);
-    setSpellCooldown("");
-    setSpellDescription("");
-    setSpellName("");
   };
   return (
-    <div className="flex flex-col">
+    <form className="flex flex-col" onSubmit={handleSubmit(addSpellCall)}>
       <input
+        name="spellName"
         className="p-2 mb-1 border border-black"
         placeholder="Spell Name"
-        value={spellName}
-        onChange={(event) => setSpellName(event.target.value)}
+        ref={register({
+          required: { message: "Spell Name is required", value: true },
+        })}
       />
+      {errors.spellName && <ErrorForm>{errors.spellName.message}</ErrorForm>}
       <input
+        name="spellCooldown"
         className="p-2 mb-1 border border-black"
         placeholder="Spell Cooldown"
-        value={spellCooldown}
-        onChange={(event) => setSpellCooldown(event.target.value)}
+        type="number"
+        ref={register({
+          required: { message: "Spell Cooldown is required", value: true },
+          min: { message: "You need at least 1 round of cooldown", value: 1 },
+        })}
       />
+      {errors.spellCooldown && (
+        <ErrorForm>{errors.spellCooldown.message}</ErrorForm>
+      )}
       <textarea
+        name="spellDescription"
         className="p-2 mb-1 border border-black"
         placeholder="Spell Description"
-        value={spellDescription}
-        onChange={(event) => setSpellDescription(event.target.value)}
+        ref={register({
+          required: { message: "Spell Description is required", value: true },
+        })}
       />
+      {errors.spellDescription && (
+        <ErrorForm>{errors.spellDescription.message}</ErrorForm>
+      )}
       <button
         className="flex items-center justify-center w-full h-8 p-2 text-white bg-blue-300 rounded hover:bg-blue-500"
-        onClick={() => addSpellCall(spellName, spellCooldown, spellDescription)}
+        type="submit"
       >
         Add a spell
       </button>
-    </div>
+    </form>
   );
 };
 

@@ -1,8 +1,9 @@
 import "./Root.css";
 import { Route, Routes } from "react-router-dom";
-import { Index } from "./Index/index";
+import { Index } from "./Index/Index";
 import { Game } from "./Game/Game";
 import { Layout } from "../Layout/Layout";
+import { Lobby } from "./Lobby/Lobby";
 const LayoutRoute = ({ path, element }) => (
   <Layout>
     <Route path={path} element={element}></Route>
@@ -10,7 +11,8 @@ const LayoutRoute = ({ path, element }) => (
 );
 const Root = () => (
   <Routes>
-    <LayoutRoute path="/" element={<Index />} />
+    <Route path="/" element={<Index />} />
+    <LayoutRoute path="/lobby" element={<Lobby />} />
     <Route path="/game/:roomName" element={<Game />} />
   </Routes>
 );

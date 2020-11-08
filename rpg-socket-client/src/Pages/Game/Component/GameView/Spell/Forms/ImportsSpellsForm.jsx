@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 
 const ImportsSpellsForm = ({ importSpells }) => {
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState("");
+  
   async function importsSpellsCall() {
-    let text = await file.text();
+    let text = await file?.text();
     importSpells(text);
   }
 

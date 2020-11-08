@@ -11,8 +11,9 @@ const ExcedMaxPlayer = (room, maxPlayer) => {
   }
   return false;
 };
-
+const generateRoomPassword = () => Math.random().toString(36).slice(-8);
 module.exports = {
   getRoom,
-  ExcedMaxPlayer
+  generateRoomPassword,
+  ExcedMaxPlayer,
 };

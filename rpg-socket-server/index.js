@@ -1,7 +1,11 @@
 const http = require("http");
 const socketIo = require("socket.io");
 const express = require("express");
-const { getRoom, ExcedMaxPlayer } = require("./roomHelper");
+const {
+  getRoom,
+  ExcedMaxPlayer,
+  generateRoomPassword,
+} = require("./roomHelper");
 const {
   getPlayer,
   getPlayerSpell,
@@ -18,7 +22,6 @@ const socket = socketIo(server); // < Interesting!
 
 var rooms = {};
 var playersName = [];
-var generateRoomPassword = () => Math.random().toString(36).slice(-8);
 
 socket.on("connection", (socket) => {
   socket.on("joinRoom", function (roomInformation) {
@@ -93,11 +96,11 @@ socket.on("connection", (socket) => {
       room.players = room.players.filter(
         (player) => player.name !== playerName
       );
-      if (room.players.length <= 0) {
+      if (room.players.length <= 0 && room.owner !== true) {
         room.owner = room.owner === playerName;
       }
       socket.leave(roomName);
-      if (room.players.length <= 0 || room.owner === true) {
+      if (room.players.length <= 0 && room.owner === true) {
         delete rooms[roomName];
       }
     }
@@ -171,6 +174,7 @@ socket.on("connection", (socket) => {
       players: [],
       password: generateRoomPassword(),
     };
+    socket.emit("roomCreated");
   });
 
   socket.on("endOfRound", function (roomInformation) {

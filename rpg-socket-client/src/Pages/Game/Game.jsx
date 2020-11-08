@@ -1,12 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
-import { SocketContext } from "../Shared/Context/SocketContext";
+import { SocketContext } from "../../Shared/Context/SocketContext";
 import { useParams, useNavigate } from "react-router-dom";
-import { UserContext } from "../Shared/Context/UserContext";
+import { UserContext } from "../../Shared/Context/UserContext";
 import { GameInformation } from "./Component/GameView/GameInformation";
-import { Accordion } from "../Shared/Component/Accordion/Accordion";
+import { Accordion } from "../../Shared/Component/Accordion/Accordion";
 import { SpellsView } from "./Component/GameView/Spell/SpellsView";
-import { useModal } from "../Shared/Hooks/ModalHooks";
-import { useAlert } from "../Shared/Hooks/AlertHooks";
+import { useModal } from "../../Shared/Hooks/ModalHooks";
+import { useAlert } from "../../Shared/Hooks/AlertHooks";
 
 const Game = () => {
   const { roomName } = useParams();

@@ -4,8 +4,8 @@ import "./index.css";
 import { Root } from "./Pages/Root";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
-import { SocketProvider } from "./Pages/Shared/Context/SocketContext";
-import { UserProvider } from "./Pages/Shared/Context/UserContext";
+import { SocketProvider } from "./Shared/Context/SocketContext";
+import { UserProvider } from "./Shared/Context/UserContext";
 ReactDOM.render(
   <React.StrictMode>
     <UserProvider>
