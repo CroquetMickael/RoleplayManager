@@ -9,7 +9,6 @@ if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   ENDPOINT = "https://roleplay-manager-server.herokuapp.com";
  
 }
-console.log(ENDPOINT);
 const SocketContext = React.createContext(null);
 
 const SocketProvider = (props) => {

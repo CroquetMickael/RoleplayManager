@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SocketContext } from "../../Shared/Context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../Shared/Context/UserContext";
@@ -17,16 +17,19 @@ const Lobby = () => {
   );
   const { setIsModalOpen, Modal, ShowAndSetModalContent } = useModal();
 
-  const addOrModifyPlayerName = (type) => {
-    ShowAndSetModalContent(
-      `${type} your player Name`,
-      <PlayerNameForm
-        setIsModalOpen={setIsModalOpen}
-        setPlayerName={setPlayerName}
-        playerName={playerName}
-      />
-    );
-  };
+  const addOrModifyPlayerName = useCallback(
+    (type) => {
+      ShowAndSetModalContent(
+        `${type} your player Name`,
+        <PlayerNameForm
+          setIsModalOpen={setIsModalOpen}
+          setPlayerName={setPlayerName}
+          playerName={playerName}
+        />
+      );
+    },
+    [playerName, setIsModalOpen, setPlayerName]
+  );
 
   useEffect(() => {
     if (!checkPlayerNameExists()) {
@@ -46,7 +49,7 @@ const Lobby = () => {
     return () => {
       clearInterval(interval);
     };
-  }, [socket]);
+  }, [addOrModifyPlayerName, checkPlayerNameExists, socket]);
 
   const joinRoom = (roomName, roomPassword) => {
     socket.emit("joinRoom", { playerName, roomName, roomPassword });
@@ -64,6 +67,9 @@ const Lobby = () => {
 
   return (
     <>
+      <p className="text-3xl text-red-500">
+        L'interface est susceptible de changer !
+      </p>
       <div className="grid grid-cols-3 gap-4 xl:grid-cols-6 auto-rows-max">
         {rooms !== undefined
           ? Object.keys(rooms).map((roomName) => (
@@ -73,6 +79,7 @@ const Lobby = () => {
                 roomName={roomName}
                 playersNumber={rooms[roomName].players.length}
                 maxPlayer={rooms[roomName].maxPlayer}
+                isOwnerConnected={rooms[roomName].isOwnerConnected}
                 onClick={() =>
                   ShowAndSetModalContent(
                     `Joining : ${roomName}`,

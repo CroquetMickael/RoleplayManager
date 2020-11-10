@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { SpellButton } from "./SpellButton";
 import { SpellDescription } from "./SpellDescription";
-import { SpellForm } from "./Forms/AddSpellForm";
+import { AddSpellForm } from "./Forms/AddSpellForm";
 import { ImportsSpellsForm } from "./Forms/ImportsSpellsForm";
+import { ModifyingSpellForm } from "./Forms/ModifyingSpellForm";
 
 const SpellsView = ({
   spells,
@@ -23,6 +24,51 @@ const SpellsView = ({
       spellCooldown,
       spellDescription,
     });
+  };
+
+  const modifySpell = (
+    spellName,
+    spellCooldown,
+    spellCurrentCooldown,
+    spellDescription
+  ) => {
+    socket.emit("modifySpell", {
+      playerName,
+      roomName,
+      spellName,
+      spellCooldown,
+      spellDescription,
+      spellCurrentCooldown,
+      isOwner
+    });
+  };
+
+  const modifyModal = (spell) => {
+    ShowAndSetModalContent(
+      "Modify a spell",
+      <ModifyingSpellForm modifySpell={modifySpell} spell={spell} />
+    );
+  };
+
+  const deleteSpell = (spellName) => {
+    ShowAndSetModalContent(
+      "Delete a spell",
+      <>
+        <p>You're about to delete a spell named : {spellName}</p>
+        <button
+          className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-red-300 rounded hover:bg-red-500"
+          onClick={() => {
+            socket.emit("deleteSpell", {
+              playerName,
+              roomName,
+              spellName,
+            });
+          }}
+        >
+          Confirm !
+        </button>
+      </>
+    );
   };
 
   const importSpells = (spells) => {
@@ -57,8 +103,23 @@ const SpellsView = ({
           `Spell ${spellName} has been added`
         );
       });
+      socket.on("spellsImported", function () {
+        ShowAndSetAlertContent(
+          "Spells imported",
+          "Your spells have been imported"
+        );
+      });
+      socket.on("spellHasBeenModified", function () {
+        ShowAndSetAlertContent(
+          "Spell Modified",
+          "The spell have been modified"
+        );
+      });
+      socket.on("spellHasBeenDeleted", function () {
+        ShowAndSetAlertContent("Spell Deleted", "The spell have been deleted");
+      });
     }
-  }, [socket]);
+  }, [socket, ShowAndSetAlertContent]);
 
   return (
     <div>
@@ -66,66 +127,32 @@ const SpellsView = ({
         <div className="w-full text-xl font-bold text-center">No spells !</div>
       ) : null}
       <div className="grid grid-cols-6 gap-4">
-        {spells?.map((spell) =>
-          spell.currentCooldown === 0 && canModify === false ? (
-            <SpellButton
-              className="w-full bg-blue-400 rounded hover:bg-blue-700"
-              textClassName="text-white"
-              spellClicks={{
-                showSpellDescription: () =>
-                  showSpellDescription(
-                    spell.name,
-                    spell.description,
-                    spell.defaultCooldown
-                  ),
-              }}
-            >
-              {spell.name}
-            </SpellButton>
-          ) : spell.currentCooldown === 0 && canModify && isOwner === false ? (
-            <SpellButton
-              className="w-full bg-blue-400 rounded hover:bg-blue-700"
-              textClassName="text-white"
-              spellRight={{
-                canModify: true,
-                canDelete: true,
-                canUse: true,
-              }}
-              spellClicks={{
-                useSpell: () => spellUse(spell.name),
-                showSpellDescription: () =>
-                  showSpellDescription(
-                    spell.name,
-                    spell.description,
-                    spell.defaultCooldown
-                  ),
-              }}
-            >
-              {spell.name}
-            </SpellButton>
-          ) : (
-            <SpellButton
-              className="w-full bg-blue-400 rounded hover:bg-blue-700"
-              textClassName="text-white"
-              coolDown={spell.currentCooldown}
-              spellRight={{
-                canModify: true,
-                canDelete: true,
-                canUse: false,
-              }}
-              spellClicks={{
-                showSpellDescription: () =>
-                  showSpellDescription(
-                    spell.name,
-                    spell.description,
-                    spell.defaultCooldown
-                  ),
-              }}
-            >
-              {spell.name}
-            </SpellButton>
-          )
-        )}
+        {spells?.map((spell) => (
+          <SpellButton
+            className="w-full bg-blue-400 rounded hover:bg-blue-700"
+            textClassName="text-white"
+            isOwner={isOwner}
+            spellRight={{
+              canModify: canModify,
+              canDelete: canModify,
+              canUse: canModify && isOwner === false,
+            }}
+            coolDown={spell.currentCooldown}
+            spellClicks={{
+              useSpell: () => spellUse(spell.name),
+              modifySpell: () => modifyModal(spell),
+              deleteSpell: () => deleteSpell(spell.name),
+              showSpellDescription: () =>
+                showSpellDescription(
+                  spell.name,
+                  spell.description,
+                  spell.defaultCooldown
+                ),
+            }}
+          >
+            {spell.name}
+          </SpellButton>
+        ))}
       </div>
       {canModify ? (
         <>
@@ -134,7 +161,7 @@ const SpellsView = ({
             onClick={() =>
               ShowAndSetModalContent(
                 "Add a spell",
-                <SpellForm addSpell={addSpell} />
+                <AddSpellForm addSpell={addSpell} />
               )
             }
           >
@@ -153,7 +180,7 @@ const SpellsView = ({
               </a>
             ) : null}
             <button
-              className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-blue-300 rounded hover:bg-blue-500"
+              className="flex items-center justify-center w-full p-2 m-2 text-white bg-blue-300 rounded hover:bg-blue-500"
               onClick={() =>
                 ShowAndSetModalContent(
                   "Imports Spells",

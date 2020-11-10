@@ -12,7 +12,7 @@ const CardGame = (props) => (
           {props.playersNumber}/{props.maxPlayer}
         </small>
       </div>
-      {props.maxPlayer === props.players.length ? (
+      {props.maxPlayer === props.players.length && props.isOwnerConnected ? (
         <Button>Room is full</Button>
       ) : (
         <Button onClick={props.onClick}>Join game</Button>

@@ -12,7 +12,7 @@ const Accordion = ({ title, index, children }) => (
       {title}
     </label>
     <div className="overflow-hidden leading-normal tab-content">
-      <p className="p-5">{children}</p>
+      <div className="p-5">{children}</div>
     </div>
   </div>
 );

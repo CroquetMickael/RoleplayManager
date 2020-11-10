@@ -2,11 +2,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { SocketContext } from "../../Shared/Context/SocketContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../../Shared/Context/UserContext";
-import { GameInformation } from "./Component/GameView/GameInformation";
+import { RoomInformation } from "./Component/GameView/RoomInformations/RoomInformation";
 import { Accordion } from "../../Shared/Component/Accordion/Accordion";
 import { SpellsView } from "./Component/GameView/Spell/SpellsView";
 import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { useAlert } from "../../Shared/Hooks/AlertHooks";
+import { ChangePasswordForm } from "./Component/GameView/RoomInformations/ChangePasswordForm";
 
 const Game = () => {
   const { roomName } = useParams();
@@ -19,21 +20,7 @@ const Game = () => {
 
   const navigate = useNavigate();
   useEffect(() => {
-    const isRoomInformationOk = () => {
-      if (roomInformation === undefined) {
-        return false;
-      }
-      if (roomInformation.players === undefined) {
-        return false;
-      }
-      if (roomInformation.players.length <= 0) {
-        return false;
-      }
-      return true;
-    };
-    setTimeout(() => {
-      socket.emit("checkPlayer", { roomName, playerName });
-    }, 500);
+    socket.emit("checkPlayer", { roomName, playerName });
     const interval2 = setInterval(() => {
       socket.on("playerNotAllowed", () => {
         navigate("/");
@@ -41,21 +28,18 @@ const Game = () => {
       socket.emit("getRoomInformation", roomName);
       socket.on("roomInformation", (data) => {
         setRoomInformation(data);
-        if (!isRoomInformationOk) {
-          navigate("/");
-        }
       });
     }, 1000);
     return () => {
       clearInterval(interval2);
       socket.emit("leaveRoom", { playerName, roomName });
     };
-  }, [playerName, roomName, socket]);
+  }, [navigate, playerName, roomName, socket]);
 
   useEffect(() => {
     const owner = roomInformation?.owner === playerName;
     setIsOwner(owner);
-  });
+  }, [playerName, roomInformation?.owner]);
 
   useEffect(() => {
     socket.on("RoundEnded", function () {
@@ -70,39 +54,63 @@ const Game = () => {
         `${playerName} has joined the game`
       );
     });
-  });
+    socket.on("roomPasswordChanged", function () {
+      ShowAndSetAlertContent(
+        "Password Modified",
+        "The room password have been modified"
+      );
+    });
+    socket.on("GMJoined", function () {
+      ShowAndSetAlertContent(
+        "GM have joined the game !",
+        "The GM has joined the game"
+      );
+    });
+  }, [ShowAndSetAlertContent, socket]);
 
   const endOfTurn = () => {
     socket.emit("endOfRound", { playerName, roomName });
   };
 
+  const canModify = (name) => {
+    if (name === playerName || isOwner === true) {
+      return true;
+    }
+    return false;
+  };
+
+  const changePassword = (password) => {
+    socket.emit("modifyRoomPassword", { playerName, roomName, password });
+  };
+
   return (
     <div className="relative h-full overflow-x-hidden">
-      <GameInformation roomName={roomName} roomInformation={roomInformation} />
+      <RoomInformation
+        roomName={roomName}
+        roomInformation={roomInformation}
+        isOwner={isOwner}
+        changePassword={() =>
+          ShowAndSetModalContent(
+            "Change room password",
+            <ChangePasswordForm changePassword={changePassword} />
+          )
+        }
+      />
       <div className="grid grid-cols-2">
         <div>
           {roomInformation?.players?.map((player, index) => (
             <Accordion key={player.name} title={player.name} index={index}>
-              {player.name === playerName || isOwner ? (
-                <SpellsView
-                  spells={player.spells}
-                  socket={socket}
-                  canModify={true}
-                  isOwner={isOwner}
-                  playerName={player.name}
-                  currentPlayerName={playerName}
-                  roomName={roomName}
-                  ShowAndSetAlertContent={ShowAndSetAlertContent}
-                  ShowAndSetModalContent={ShowAndSetModalContent}
-                />
-              ) : (
-                <SpellsView
-                  spells={player.spells}
-                  canModify={false}
-                  ShowAndSetAlertContent={ShowAndSetAlertContent}
-                  ShowAndSetModalContent={ShowAndSetModalContent}
-                />
-              )}
+              <SpellsView
+                spells={player.spells}
+                socket={socket}
+                canModify={canModify(player.name)}
+                isOwner={isOwner}
+                playerName={player.name}
+                currentPlayerName={playerName}
+                roomName={roomName}
+                ShowAndSetAlertContent={ShowAndSetAlertContent}
+                ShowAndSetModalContent={ShowAndSetModalContent}
+              />
             </Accordion>
           ))}
         </div>
@@ -111,7 +119,7 @@ const Game = () => {
         </div>
       </div>
       {isOwner ? (
-        <div className="m-4"> 
+        <div className="m-4">
           <button
             onClick={() => endOfTurn()}
             className="w-full bg-green-500 rounded hover:bg-green-700"
