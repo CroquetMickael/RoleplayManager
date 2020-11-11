@@ -1,42 +1,20 @@
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 export const useAlert = () => {
-  const [message, setMessage] = useState("");
-  const [title, setTitle] = useState("");
-  const [isAlertOpen, setAlertIsOpen] = useState(false);
+  const [alerts, setAlerts] = useState([]);
 
-  const showAlert = () => {
-    setAlertIsOpen(true);
-    setTimeout(() => {
-      setAlertIsOpen(false);
-    }, 3000);
-  };
-  function ShowAndSetAlertContent(title, message) {
-    setTitle(title);
-    setMessage(message);
-    showAlert();
+  function addNewAlert(title, message) {
+    alerts.push({ id: uuidv4(), title, message });
+    setAlerts(alerts);
   }
 
-  const Alert = (
-    <div
-      className={`absolute bottom-0 mx-auto my-4 md:top-0 md:right-0 md:m-4 transition-all duration-200 ease-in-out transform ${
-        isAlertOpen ? "-translate-x-1" : "translate-x-full"
-      }`}
-    >
-      <div className="h-24 mx-8 bg-white rounded shadow-lg">
-        <div className="flex justify-between">
-          <div className="p-4 text-lg font-bold">{title}</div>
-          <div
-            className="p-4 cursor-pointer"
-            onClick={() => setAlertIsOpen(false)}
-          >
-            X
-          </div>
-        </div>
-        <div className="px-4">{message}</div>
-      </div>
-    </div>
-  );
+  function cleanAlertFromArray(id) {
+    var array = alerts;
+    const elemIndex = alerts.findIndex((alert) => alert.id === id);
+    array.splice(elemIndex, 1);
+    setAlerts(array);
+  }
 
-  return { Alert, ShowAndSetAlertContent };
+  return { alerts, addNewAlert, cleanAlertFromArray };
 };

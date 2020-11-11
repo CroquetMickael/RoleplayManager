@@ -8,6 +8,7 @@ import { SpellsView } from "./Component/GameView/Spell/SpellsView";
 import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { useAlert } from "../../Shared/Hooks/AlertHooks";
 import { ChangePasswordForm } from "./Component/GameView/RoomInformations/ChangePasswordForm";
+import { AlertList } from "./Component/Alerts/AlertList";
 
 const Game = () => {
   const { roomName } = useParams();
@@ -16,7 +17,7 @@ const Game = () => {
   const [roomInformation, setRoomInformation] = useState();
   const [isOwner, setIsOwner] = useState(false);
   const { Modal, ShowAndSetModalContent } = useModal();
-  const { Alert, ShowAndSetAlertContent } = useAlert();
+  const { addNewAlert, alerts, cleanAlertFromArray } = useAlert();
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -43,30 +44,24 @@ const Game = () => {
 
   useEffect(() => {
     socket.on("RoundEnded", function () {
-      ShowAndSetAlertContent(
+      addNewAlert(
         "This is a end of round !",
         `The round is finish ! A new one start !`
       );
     });
     socket.on("PlayerJoined", function (playerName) {
-      ShowAndSetAlertContent(
+      addNewAlert(
         "Player have joined the game !",
         `${playerName} has joined the game`
       );
     });
     socket.on("roomPasswordChanged", function () {
-      ShowAndSetAlertContent(
-        "Password Modified",
-        "The room password have been modified"
-      );
+      addNewAlert("Password Modified", "The room password have been modified");
     });
     socket.on("GMJoined", function () {
-      ShowAndSetAlertContent(
-        "GM have joined the game !",
-        "The GM has joined the game"
-      );
+      addNewAlert("GM have joined the game !", "The GM has joined the game");
     });
-  }, [ShowAndSetAlertContent, socket]);
+  }, [socket]);
 
   const endOfTurn = () => {
     socket.emit("endOfRound", { playerName, roomName });
@@ -108,8 +103,8 @@ const Game = () => {
                 playerName={player.name}
                 currentPlayerName={playerName}
                 roomName={roomName}
-                ShowAndSetAlertContent={ShowAndSetAlertContent}
                 ShowAndSetModalContent={ShowAndSetModalContent}
+                ShowAndSetAlertContent={addNewAlert}
               />
             </Accordion>
           ))}
@@ -129,7 +124,7 @@ const Game = () => {
         </div>
       ) : null}
       {Modal}
-      {Alert}
+      <AlertList alerts={alerts} cleanAlertFromArray={cleanAlertFromArray} />
     </div>
   );
 };

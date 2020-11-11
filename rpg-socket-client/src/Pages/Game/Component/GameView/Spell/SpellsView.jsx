@@ -39,7 +39,7 @@ const SpellsView = ({
       spellCooldown,
       spellDescription,
       spellCurrentCooldown,
-      isOwner
+      isOwner,
     });
   };
 
@@ -119,7 +119,7 @@ const SpellsView = ({
         ShowAndSetAlertContent("Spell Deleted", "The spell have been deleted");
       });
     }
-  }, [socket, ShowAndSetAlertContent]);
+  }, [socket]);
 
   return (
     <div>
