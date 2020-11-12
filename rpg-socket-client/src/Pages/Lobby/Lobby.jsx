@@ -112,7 +112,7 @@ const Lobby = () => {
           Create a room
         </button>
         <button
-          className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-blue-300 rounded hover:bg-blue-500"
+          className="flex items-center justify-center w-full h-8 p-2 my-2 text-white bg-blue-300 rounded hover:bg-blue-500"
           onClick={() => addOrModifyPlayerName("Modify")}
         >
           Modify player name
