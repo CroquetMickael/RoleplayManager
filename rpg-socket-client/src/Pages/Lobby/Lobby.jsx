@@ -2,11 +2,12 @@ import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SocketContext } from "../../Shared/Context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../../Shared/Context/UserContext";
-import { CardGame } from "./Components/Card";
 import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { CreateRoomForm } from "./Components/CreateRoomForm";
 import { JoinRoom } from "./Components/JoinRoom";
 import { PlayerNameForm } from "./Components/PlayerNameForm";
+import { Card } from "../../Shared/Component/Card";
+import { Button } from "../../Shared/Component/Button/Button";
 
 const Lobby = () => {
   const [rooms, setRooms] = useState();
@@ -73,24 +74,40 @@ const Lobby = () => {
       <div className="grid grid-cols-3 gap-4 xl:grid-cols-6 auto-rows-max">
         {rooms !== undefined
           ? Object.keys(rooms).map((roomName) => (
-              <CardGame
+              <Card
                 key={roomName}
-                players={rooms[roomName].players}
-                roomName={roomName}
-                playersNumber={rooms[roomName].players.length}
-                maxPlayer={rooms[roomName].maxPlayer}
-                isOwnerConnected={rooms[roomName].isOwnerConnected}
-                onClick={() =>
-                  ShowAndSetModalContent(
-                    `Joining : ${roomName}`,
-                    <JoinRoom
-                      key={roomName}
-                      joinRoom={joinRoom}
-                      roomName={roomName}
-                    />
-                  )
+                leftSidetext={roomName}
+                rightSideText={
+                  <span>
+                    {rooms[roomName].players.length} /{" "}
+                    {rooms[roomName].maxPlayer}
+                  </span>
                 }
-              />
+                isVertical={true}
+              >
+                <div className="mx-2">
+                  {rooms[roomName].maxPlayer ===
+                    rooms[roomName].players.length &&
+                  rooms[roomName].isOwnerConnected ? (
+                    <Button>Room is full</Button>
+                  ) : (
+                    <Button
+                      onClick={() =>
+                        ShowAndSetModalContent(
+                          `Joining : ${roomName}`,
+                          <JoinRoom
+                            key={roomName}
+                            joinRoom={joinRoom}
+                            roomName={roomName}
+                          />
+                        )
+                      }
+                    >
+                      Join game
+                    </Button>
+                  )}
+                </div>
+              </Card>
             ))
           : null}
       </div>

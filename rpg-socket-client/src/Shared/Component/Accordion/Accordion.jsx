@@ -14,8 +14,8 @@ const Accordion = ({ title, index, children }) => (
       for={index}
     >
       <p>{title}</p>
-      <div class="icon p-1 transition-transform duration-75">
-        <FaChevronUp />
+      <div class="icon-container p-1">
+        <FaChevronUp className="transition-transform duration-75 icon" />
       </div>
     </label>
     <div className="overflow-hidden leading-normal tab-content">

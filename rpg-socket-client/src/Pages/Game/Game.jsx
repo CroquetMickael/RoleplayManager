@@ -9,6 +9,7 @@ import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { useAlert } from "../../Shared/Hooks/AlertHooks";
 import { ChangePasswordForm } from "./Component/GameView/RoomInformations/ChangePasswordForm";
 import { AlertList } from "./Component/Alerts/AlertList";
+import { Card } from "../../Shared/Component/Card";
 
 const Game = () => {
   const { roomName } = useParams();
@@ -91,28 +92,22 @@ const Game = () => {
           )
         }
       />
-      <div className="grid grid-cols-2">
-        <div>
-          {roomInformation?.players?.map((player, index) => (
-            <Accordion key={player.name} title={player.name} index={index}>
-              <SpellsView
-                spells={player.spells}
-                socket={socket}
-                canModify={canModify(player.name)}
-                isOwner={isOwner}
-                playerName={player.name}
-                currentPlayerName={playerName}
-                roomName={roomName}
-                ShowAndSetModalContent={ShowAndSetModalContent}
-                ShowAndSetAlertContent={addNewAlert}
-              />
-            </Accordion>
-          ))}
-        </div>
-        <div className="text-center">
-          Va contenir l'initiative et les actions émises !
-        </div>
+      <div className="py-4 text-center">
+        Va contenir l'initiative et les actions émises !
       </div>
+      {roomInformation?.players?.map((player, index) => (
+        <SpellsView
+          spells={player.spells}
+          socket={socket}
+          canModify={canModify(player.name)}
+          isOwner={isOwner}
+          playerName={player.name}
+          currentPlayerName={playerName}
+          roomName={roomName}
+          ShowAndSetModalContent={ShowAndSetModalContent}
+          ShowAndSetAlertContent={addNewAlert}
+        />
+      ))}
       {isOwner ? (
         <div className="m-4">
           <button

@@ -5,23 +5,22 @@ const SpellButton = ({
   className,
   coolDown,
   spellRight,
-  isOwner
+  isOwner,
 }) => (
-  <div>
-    <div className="relative w-full">
-      {coolDown > 0 && isOwner === false ? (
-        <div className="absolute z-10 w-full p-2 text-center text-white bg-black bg-opacity-75 rounded">
-          <span>{coolDown}</span>
-        </div>
-      ) : null}
-    </div>
+  <div className="relative w-full">
+    {coolDown > 0 && isOwner === false ? (
+      <div className="absolute z-10 w-full p-2 text-center text-white bg-black bg-opacity-75 rounded">
+        <span>{coolDown}</span>
+      </div>
+    ) : null}
+
     <div className="inline-block w-full dropdown">
       <button
         className={`text-center items-center p-2 font-semibold ${className}`}
       >
         <span>{children}</span>
       </button>
-      <ul className="absolute hidden pt-1 text-gray-700 dropdown-content">
+      <ul className="absolute z-10 hidden pt-1 text-gray-700 dropdown-content">
         {spellRight?.canUse ? (
           <li
             className="block p-2 whitespace-no-wrap bg-gray-200 rounded-t cursor-pointer hover:bg-gray-400"

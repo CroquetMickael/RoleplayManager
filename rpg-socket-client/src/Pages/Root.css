@@ -5,6 +5,16 @@
 
 @import "tailwindcss/utilities";
 
+/*tooltip*/
+
+.tooltip .tooltip-text {
+  @apply absolute z-50 invisible text-center;
+}
+
+.tooltip:hover .tooltip-text {
+  @apply visible;
+}
+
 /* Tab content - closed */
 .tab-content {
   max-height: 0;
@@ -19,41 +29,28 @@
 /* Label formatting when open */
 .tab input:checked + label {
   /*@apply text-xl p-5 border-l-2 border-indigo-500 bg-gray-100 text-indigo*/
-  font-size: 1.25rem; /*.text-xl*/
-  padding: 1.25rem; /*.p-5*/
   border-left-width: 2px; /*.border-l-2*/
   border-color: #6574cd; /*.border-indigo*/
   background-color: #f8fafc; /*.bg-gray-100 */
   color: #6574cd; /*.text-indigo*/
 }
-/* Icon */
-.tab label::after {
-  float: right;
-  right: 0;
-  top: 0;
-  display: block;
-  width: 1.5em;
-  height: 1.5em;
-  line-height: 1.5;
-  font-size: 1.25rem;
-  text-align: center;
-  -webkit-transition: all 0.35s;
-  -o-transition: all 0.35s;
-  transition: all 0.35s;
-}
 
 /* Icon formatting - closed */
-.tab input[type="checkbox"] + label div.icon {
+.tab input[type="checkbox"] + label div.icon-container {
   font-weight: bold; /*.font-bold*/
   border-width: 1px; /*.border*/
   border-radius: 9999px; /*.rounded-full */
   border-color: #b8c2cc; /*.border-grey*/
 }
 /* Icon formatting - open */
-.tab input[type="checkbox"]:checked + label div.icon {
-  transform: scaleY(-1);
+.tab input[type="checkbox"]:checked + label div.icon-container {
   background-color: #6574cd; /*.bg-indigo*/
   color: #f8fafc; /*.text-grey-lightest*/
+}
+
+/* Icon formatting - open */
+.tab input[type="checkbox"]:checked + label div.icon-container svg.icon {
+  transform: scaleY(-1);
 }
 
 .dropdown:hover > .dropdown-content {

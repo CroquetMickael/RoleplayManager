@@ -4,6 +4,9 @@ import { SpellDescription } from "./SpellDescription";
 import { AddSpellForm } from "./Forms/AddSpellForm";
 import { ImportsSpellsForm } from "./Forms/ImportsSpellsForm";
 import { ModifyingSpellForm } from "./Forms/ModifyingSpellForm";
+import { FaPlus, FaDownload, FaUpload } from "react-icons/fa";
+import { Tooltip } from "../../../../../Shared/Component/Tooltip/Tooltip";
+import { Card } from "../../../../../Shared/Component/Card";
 
 const SpellsView = ({
   spells,
@@ -122,11 +125,59 @@ const SpellsView = ({
   }, [socket]);
 
   return (
-    <div>
+    <Card
+      leftSidetext={playerName}
+      rightSideText={
+        <div className="mr-12">
+          {canModify ? (
+            <div className="flex w-full">
+              <button
+                className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                onClick={() =>
+                  ShowAndSetModalContent(
+                    "Add a spell",
+                    <AddSpellForm addSpell={addSpell} />
+                  )
+                }
+              >
+                <FaPlus />
+                <Tooltip text="Add a spell" />
+              </button>
+
+              {spells?.length !== 0 && canModify ? (
+                <button className="flex items-center justify-center p-2 m-2 text-center text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip">
+                  <a
+                    href={`data:text/json;charset=utf-8,${encodeURIComponent(
+                      JSON.stringify(spells)
+                    )}`}
+                    download={`${playerName}_spells.json`}
+                  >
+                    <FaDownload />
+                  </a>
+                  <Tooltip text="Export spells" />
+                </button>
+              ) : null}
+              <button
+                className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                onClick={() =>
+                  ShowAndSetModalContent(
+                    "Imports Spells",
+                    <ImportsSpellsForm importSpells={importSpells} />
+                  )
+                }
+              >
+                <FaUpload />
+                <Tooltip text="Import spells" />
+              </button>
+            </div>
+          ) : null}
+        </div>
+      }
+    >
       {spells?.length === 0 ? (
         <div className="w-full text-xl font-bold text-center">No spells !</div>
       ) : null}
-      <div className="grid grid-cols-6 gap-4">
+      <div className="grid grid-cols-6 gap-4 py-4 mx-2">
         {spells?.map((spell) => (
           <SpellButton
             className="w-full bg-blue-400 rounded hover:bg-blue-700"
@@ -154,46 +205,7 @@ const SpellsView = ({
           </SpellButton>
         ))}
       </div>
-      {canModify ? (
-        <>
-          <button
-            className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-blue-300 rounded hover:bg-blue-500"
-            onClick={() =>
-              ShowAndSetModalContent(
-                "Add a spell",
-                <AddSpellForm addSpell={addSpell} />
-              )
-            }
-          >
-            Add a spell
-          </button>
-          <div className="flex">
-            {spells?.length !== 0 && canModify ? (
-              <a
-                className="flex items-center justify-center w-full p-2 m-2 text-center text-white bg-blue-300 rounded hover:bg-blue-500"
-                href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                  JSON.stringify(spells)
-                )}`}
-                download={`${playerName}_spells.json`}
-              >
-                Export Spells
-              </a>
-            ) : null}
-            <button
-              className="flex items-center justify-center w-full p-2 m-2 text-white bg-blue-300 rounded hover:bg-blue-500"
-              onClick={() =>
-                ShowAndSetModalContent(
-                  "Imports Spells",
-                  <ImportsSpellsForm importSpells={importSpells} />
-                )
-              }
-            >
-              Imports spells
-            </button>
-          </div>
-        </>
-      ) : null}
-    </div>
+    </Card>
   );
 };
 
