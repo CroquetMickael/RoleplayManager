@@ -1,10 +1,9 @@
-const {
-  ExcedMaxPlayer,
-  generateRoomPassword,
-  getRoom,
-} = require("./roomHelper");
+import { Socket } from "socket.io";
+import { PlayerModel } from "../player/playerModel";
+import { ExcedMaxPlayer, generateRoomPassword, getRoom } from "./roomHelper";
+import { RoomObject } from "./roomModel";
 
-function createRoom(socket, rooms, playersName) {
+function createRoom(socket: Socket, rooms: RoomObject) {
   socket.on("createRoom", function (roomInformation) {
     if (!roomInformation) {
     }
@@ -26,7 +25,7 @@ function createRoom(socket, rooms, playersName) {
   });
 }
 
-function joinRoom(socket, rooms, playersName) {
+function joinRoom(socket: Socket, rooms: RoomObject) {
   socket.on("joinRoom", function (roomInformation) {
     if (!roomInformation) {
     }
@@ -37,10 +36,10 @@ function joinRoom(socket, rooms, playersName) {
         socket.emit("wrongPassword");
         return;
       }
-      if (ExcedMaxPlayer(room, room.maxPlayer)) {
+      if (ExcedMaxPlayer(room)) {
         return;
       }
-      if (!room.players.some((player) => player.name === playerName)) {
+      if (!room.players.some((player: PlayerModel) => player.name === playerName)) {
         room.players = [
           ...room.players,
           {
@@ -62,7 +61,7 @@ function joinRoom(socket, rooms, playersName) {
   });
 }
 
-function leaveRoom(socket, rooms) {
+function leaveRoom(socket: Socket, rooms: RoomObject) {
   socket.on("leaveRoom", function (roomInformation) {
     if (!roomInformation) {
       return;
@@ -71,7 +70,7 @@ function leaveRoom(socket, rooms) {
     const room = getRoom(rooms, roomName);
     if (room) {
       room.players = room.players.filter(
-        (player) => player.name !== playerName
+        (player: PlayerModel) => player.name !== playerName
       );
       if (playerName === room.owner) {
         room.isOwnerConnected = false;
@@ -81,7 +80,7 @@ function leaveRoom(socket, rooms) {
   });
 }
 
-function modifyRoomPassword(socket, rooms) {
+function modifyRoomPassword(socket: Socket, rooms: RoomObject) {
   socket.on("modifyRoomPassword", function (roomInformation) {
     if (!roomInformation) {
       return;
@@ -97,23 +96,23 @@ function modifyRoomPassword(socket, rooms) {
   });
 }
 
-function getRooms(socket, rooms) {
+function getRooms(socket: Socket, rooms: RoomObject) {
   socket.on("getRooms", function () {
     socket.emit("rooms", rooms);
   });
 }
 
-function getRoomInformation(socket, rooms) {
+function getRoomInformation(socket: Socket, rooms: RoomObject) {
   socket.on("getRoomInformation", function (roomName) {
     socket.emit("roomInformation", rooms[roomName]);
   });
 }
 
-module.exports = {
+export {
   joinRoom,
   getRooms,
   createRoom,
   leaveRoom,
   getRoomInformation,
   modifyRoomPassword,
-};
+}

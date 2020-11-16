@@ -1,6 +1,9 @@
-const { getRoom } = require("../rooms/roomHelper");
-const { getPlayer } = require("../playerHelper");
-const { getPlayerSpell, addSpellToPlayer } = require("./spellHelper");
+import { Socket } from "socket.io";
+import { RoomObject } from "../rooms/roomModel";
+
+import { getRoom } from "../rooms/roomHelper";
+import { getPlayer } from "../player/playerHelper";
+import { getPlayerSpell, addSpellToPlayer } from "./spellHelper";
 
 const Validator = require("jsonschema").Validator;
 const validator = new Validator();
@@ -17,7 +20,7 @@ const arraySpellSchema = {
   },
 };
 
-function addSpell(socket, rooms) {
+function addSpell(socket: Socket, rooms: RoomObject) {
   socket.on("addSpell", function (Information) {
     if (!Information) {
       return;
@@ -42,7 +45,7 @@ function addSpell(socket, rooms) {
   });
 }
 
-function useSpell(socket, rooms) {
+function useSpell(socket: Socket, rooms: RoomObject) {
   socket.on("useSpell", function (Information) {
     if (!Information) {
       return;
@@ -61,7 +64,7 @@ function useSpell(socket, rooms) {
   });
 }
 
-function importSpells(socket, rooms) {
+function importSpells(socket: Socket, rooms: RoomObject) {
   socket.on("importSpells", function (Information) {
     const { playerName, roomName, spells } = Information;
 
@@ -86,7 +89,7 @@ function importSpells(socket, rooms) {
   });
 }
 
-function modifySpell(socket, rooms) {
+function modifySpell(socket: Socket, rooms: RoomObject) {
   socket.on("modifySpell", function (Information) {
     if (!Information) {
     }
@@ -115,24 +118,24 @@ function modifySpell(socket, rooms) {
   });
 }
 
-function deleteSpell(socket, rooms) {
+function deleteSpell(socket: Socket, rooms: RoomObject) {
   socket.on("deleteSpell", function (Information) {
     if (!Information) {
     }
     const { playerName, roomName, spellName } = Information;
     const room = getRoom(rooms, roomName);
     const { player, indexOfPlayer } = getPlayer(room.players, playerName);
-    const { spell, indexOfSpell } = getPlayerSpell(player, spellName);
+    const { indexOfSpell } = getPlayerSpell(player, spellName);
     room.players[indexOfPlayer].spells.splice(indexOfSpell, 1);
     room.lastUsedDate = new Date();
     socket.emit("spellHasBeenDeleted", spellName);
   });
 }
 
-module.exports = {
+export {
   useSpell,
   addSpell,
   importSpells,
   modifySpell,
-  deleteSpell,
-};
+  deleteSpell
+}
