@@ -1,0 +1,57 @@
+import Monster from 'App/Models/Monster'
+import Room from 'App/Models/Room'
+import { DateTime } from 'luxon'
+import { Socket } from 'socket.io'
+
+export class MonsterSocket {
+  public addMonster (socket: Socket) {
+    socket.on('addMonster', async function (Information) {
+      if (!Information) {
+        return
+      }
+      const {
+        playerName,
+        roomName,
+        monsterName,
+        monsterInitiative,
+      } = Information
+      const room = await Room.query().where('name', '=', roomName).first()
+      if (room && playerName === room.owner) {
+        await Monster.create({
+          name: monsterName,
+          initiative: Number(monsterInitiative),
+          roomId: room.id,
+        })
+        room.lastUsedDate = DateTime.utc()
+        await room.save()
+        socket.emit('monsterHasBeenAdded', monsterName)
+      }
+    })
+  }
+
+  public modifyMonsterInititive (socket: Socket) {
+    socket.on('modifyMonsterInitiative', async function (Information) {
+      if (!Information) {
+        return
+      }
+      const {
+        playerName,
+        roomName,
+        id,
+        initiative,
+      } = Information
+      const room = await Room.query().where('name', '=', roomName).first()
+      if (room && playerName === room.owner) {
+        const monster = await Monster.find(id)
+        if (monster) {
+          monster.initiative = Number(initiative)
+          room.lastUsedDate = DateTime.utc()
+          await monster.save()
+          await room.save()
+          socket.emit('monsterInitiativeHasBeenModified', monster.name)
+        }
+      }
+    })
+  }
+}
+

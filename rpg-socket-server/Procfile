@@ -1,0 +1,2 @@
+release: ENV_SILENT=true cd build && mkdir tmp && cd .. && node ace migration:run — force
+web: ENV_SILENT=true npm start
