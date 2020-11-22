@@ -9,11 +9,10 @@ import { Tooltip } from "../../../../../Shared/Component/Tooltip/Tooltip";
 import { Card } from "../../../../../Shared/Component/Card";
 
 const SpellsView = ({
-  spells,
+  player,
   canModify,
   socket,
   currentPlayerName,
-  playerName,
   roomName,
   isOwner,
   ShowAndSetAlertContent,
@@ -21,7 +20,7 @@ const SpellsView = ({
 }) => {
   const addSpell = (spellName, spellCooldown, spellDescription) => {
     socket.emit("addSpell", {
-      playerName,
+      playerName: player.name,
       roomName,
       spellName,
       spellCooldown,
@@ -30,13 +29,14 @@ const SpellsView = ({
   };
 
   const modifySpell = (
+    spellId,
     spellName,
     spellCooldown,
     spellCurrentCooldown,
     spellDescription
   ) => {
     socket.emit("modifySpell", {
-      playerName,
+      spellId,
       roomName,
       spellName,
       spellCooldown,
@@ -53,7 +53,7 @@ const SpellsView = ({
     );
   };
 
-  const deleteSpell = (spellName) => {
+  const deleteSpell = (spellName, spellId) => {
     ShowAndSetModalContent(
       "Delete a spell",
       <>
@@ -62,9 +62,8 @@ const SpellsView = ({
           className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-red-300 rounded hover:bg-red-500"
           onClick={() => {
             socket.emit("deleteSpell", {
-              playerName,
               roomName,
-              spellName,
+              spellId,
             });
           }}
         >
@@ -76,15 +75,29 @@ const SpellsView = ({
 
   const importSpells = (spells) => {
     socket.emit("importSpells", {
-      playerName,
+      playerId: player.id,
       roomName,
       spells,
     });
   };
 
-  const spellUse = (spellName) => {
-    if (currentPlayerName === playerName) {
-      socket.emit("useSpell", { playerName, roomName, spellName });
+  const convertSpellWithoutIds = (spells) => {
+    const spellToReturn = spells.map((spell) => {
+      return {
+        id: spell.id,
+        name: spell.name,
+        description: spell.description,
+        currentCooldown: spell.currentCooldown,
+        defaultCooldown: spell.defaultCooldown,
+        playerId: spell.playerId,
+      };
+    });
+    return spellToReturn;
+  };
+
+  const spellUse = (spellId) => {
+    if (currentPlayerName === player.name) {
+      socket.emit("useSpell", { roomName, spellId });
     }
   };
 
@@ -126,7 +139,15 @@ const SpellsView = ({
 
   return (
     <Card
-      leftSidetext={playerName}
+      leftSidetext={
+        <p
+          className={`rounded-full mb-2 p-1 ${
+            player.isConnected ? "bg-green-600 text-white" : "bg-gray-400"
+          }`}
+        >
+          {player.name}
+        </p>
+      }
       rightSideText={
         <div className="mr-12">
           {canModify ? (
@@ -144,13 +165,13 @@ const SpellsView = ({
                 <Tooltip text="Add a spell" />
               </button>
 
-              {spells?.length !== 0 && canModify ? (
+              {player.spells?.length !== 0 && canModify ? (
                 <button className="flex items-center justify-center p-2 m-2 text-center text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip">
                   <a
                     href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                      JSON.stringify(spells)
+                      JSON.stringify(convertSpellWithoutIds(player.spells))
                     )}`}
-                    download={`${playerName}_spells.json`}
+                    download={`${player.name}_spells.json`}
                   >
                     <FaDownload />
                   </a>
@@ -174,12 +195,13 @@ const SpellsView = ({
         </div>
       }
     >
-      {spells?.length === 0 ? (
+      {player.spells?.length === 0 ? (
         <div className="w-full text-xl font-bold text-center">No spells !</div>
       ) : null}
       <div className="grid grid-cols-6 gap-4 py-4 mx-2">
-        {spells?.map((spell) => (
+        {player.spells?.map((spell) => (
           <SpellButton
+            key={spell.name}
             className="w-full bg-blue-400 rounded hover:bg-blue-700"
             textClassName="text-white"
             isOwner={isOwner}
@@ -190,9 +212,9 @@ const SpellsView = ({
             }}
             coolDown={spell.currentCooldown}
             spellClicks={{
-              useSpell: () => spellUse(spell.name),
+              useSpell: () => spellUse(spell.id),
               modifySpell: () => modifyModal(spell),
-              deleteSpell: () => deleteSpell(spell.name),
+              deleteSpell: () => deleteSpell(spell.name, spell.id),
               showSpellDescription: () =>
                 showSpellDescription(
                   spell.name,

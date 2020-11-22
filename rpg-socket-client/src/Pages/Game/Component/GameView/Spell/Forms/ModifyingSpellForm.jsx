@@ -20,6 +20,7 @@ const ModifyingSpellForm = ({ modifySpell, spell }) => {
     spellDescription,
   }) => {
     modifySpell(
+      spell.id,
       spellName,
       spellCooldown,
       spellCurrentCooldown,

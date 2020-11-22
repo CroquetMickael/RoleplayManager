@@ -37,14 +37,11 @@ const Lobby = () => {
       addOrModifyPlayerName("Insert");
     }
     const interval = setInterval(() => {
-      if (socket != null) {
         socket.emit("getRooms");
-        socket.emit("getPlayersName");
-        socket.on("playersName", (data) => {});
         socket.on("rooms", (data) => {
+          console.log(data)
           setRooms(data);
         });
-      }
     }, 1000);
 
     return () => {
@@ -73,32 +70,30 @@ const Lobby = () => {
       </p>
       <div className="grid grid-cols-3 gap-4 xl:grid-cols-6 auto-rows-max">
         {rooms !== undefined
-          ? Object.keys(rooms).map((roomName) => (
+          ? rooms.map((room) => (
               <Card
-                key={roomName}
-                leftSidetext={roomName}
+                key={room.id}
+                leftSidetext={room.name}
                 rightSideText={
                   <span>
-                    {rooms[roomName].players.length} /{" "}
-                    {rooms[roomName].maxPlayer}
+                    {room.players?.length} / {room.maxPlayer}
                   </span>
                 }
                 isVertical={true}
               >
                 <div className="mx-2">
-                  {rooms[roomName].maxPlayer ===
-                    rooms[roomName].players.length &&
-                  rooms[roomName].isOwnerConnected ? (
+                  {room.maxPlayer === room.players?.length &&
+                  room.isOwnerConnected ? (
                     <Button>Room is full</Button>
                   ) : (
                     <Button
                       onClick={() =>
                         ShowAndSetModalContent(
-                          `Joining : ${roomName}`,
+                          `Joining : ${room.name}`,
                           <JoinRoom
-                            key={roomName}
+                            key={room.name}
                             joinRoom={joinRoom}
-                            roomName={roomName}
+                            roomName={room.name}
                           />
                         )
                       }
