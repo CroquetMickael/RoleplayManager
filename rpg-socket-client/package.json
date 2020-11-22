@@ -3,29 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@craco/craco": "^5.7.0",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "autoprefixer": "^9.7.6",
+    "@craco/craco": "^5.8.0",
+    "@testing-library/jest-dom": "^5.11.6",
+    "@testing-library/react": "^11.2.0",
+    "@testing-library/user-event": "^12.2.2",
+    "autoprefixer": "^9.8.6",
     "history": "^5.0.0",
     "postcss-import": "^12.0.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-hook-form": "^6.11.0",
+    "react-hook-form": "^6.11.3",
     "react-icons": "^3.11.0",
     "react-router": "^6.0.0-beta.0",
     "react-router-dom": "^6.0.0-beta.0",
     "react-scripts": "4.0.0",
     "react-spring": "^8.0.27",
     "socket.io-client": "^2.3.1",
-    "tailwindcss": "^1.9.6",
+    "tailwindcss": "^2.0.1-compat",
     "uuid": "^8.3.1",
     "web-vitals": "^0.2.4"
   },
   "devDependencies": {
     "@fullhuman/postcss-purgecss": "^2.1.2",
-    "postcss-cli": "^7.1.0"
+    "postcss-cli": "^8.3.0"
   },
   "scripts": {
     "start": "craco start",

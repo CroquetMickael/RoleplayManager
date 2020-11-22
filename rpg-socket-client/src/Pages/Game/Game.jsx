@@ -3,19 +3,23 @@ import { SocketContext } from "../../Shared/Context/SocketContext";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../../Shared/Context/UserContext";
 import { RoomInformation } from "./Component/GameView/RoomInformations/RoomInformation";
-import { Accordion } from "../../Shared/Component/Accordion/Accordion";
 import { SpellsView } from "./Component/GameView/Spell/SpellsView";
 import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { useAlert } from "../../Shared/Hooks/AlertHooks";
 import { ChangePasswordForm } from "./Component/GameView/RoomInformations/ChangePasswordForm";
 import { AlertList } from "./Component/Alerts/AlertList";
 import { Card } from "../../Shared/Component/Card";
+import { FaPen, FaPlus } from "react-icons/fa";
+import { Tooltip } from "../../Shared/Component/Tooltip/Tooltip";
+import { AddMonsterForm } from "./Component/GameView/RoomInformations/AddMonsterForm";
+import { ModifyInitiativeForm } from "./Component/GameView/RoomInformations/ModifyInitiative";
 
 const Game = () => {
   const { roomName } = useParams();
   const { socket } = useContext(SocketContext);
   const { playerName } = useContext(UserContext);
   const [roomInformation, setRoomInformation] = useState();
+  const [initiative, setInitiative] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
   const { Modal, ShowAndSetModalContent } = useModal();
   const { addNewAlert, alerts, cleanAlertFromArray } = useAlert();
@@ -29,6 +33,32 @@ const Game = () => {
       });
       socket.emit("getRoomInformation", roomName);
       socket.on("roomInformation", (data) => {
+        const initiativeArray = [];
+        data.players.forEach((player) => {
+          initiativeArray.push({
+            id: player.id,
+            name: player.name,
+            initiative: player.initiative,
+            isMonster: false,
+          });
+        });
+        data.monsters.forEach((monster) => {
+          initiativeArray.push({
+            id: monster.id,
+            name: monster.name,
+            initiative: monster.initiative,
+            isMonster: true,
+          });
+        });
+        const sortedInitiative = initiativeArray.sort((a, b) => {
+          if (a.initiative < b.initiative) {
+            return 1;
+          } else if (a.initiative > b.initiative) {
+            return -1;
+          }
+          return 0;
+        });
+        setInitiative(sortedInitiative);
         setRoomInformation(data);
       });
     }, 1000);
@@ -62,6 +92,9 @@ const Game = () => {
     socket.on("GMJoined", function () {
       addNewAlert("GM have joined the game !", "The GM has joined the game");
     });
+    socket.on("monsterHasBeenAdded", function () {
+      addNewAlert("Monster Added", "The monster has been added !");
+    });
   }, [socket]);
 
   const endOfTurn = () => {
@@ -79,6 +112,33 @@ const Game = () => {
     socket.emit("modifyRoomPassword", { playerName, roomName, password });
   };
 
+  const modifyInitiative = (isMonster, id, initiative) => {
+    if (isMonster) {
+      socket.emit("modifyMonsterInitiative", {
+        playerName,
+        roomName,
+        id,
+        initiative,
+      });
+    } else {
+      socket.emit("modifyPlayerInitiative", {
+        playerName,
+        roomName,
+        id,
+        initiative,
+      });
+    }
+  };
+
+  const addMonster = (monsterName, monsterInitiative) => {
+    socket.emit("addMonster", {
+      playerName,
+      roomName,
+      monsterName,
+      monsterInitiative,
+    });
+  };
+
   return (
     <div className="relative h-full overflow-x-hidden">
       <RoomInformation
@@ -92,21 +152,75 @@ const Game = () => {
           )
         }
       />
-      <div className="py-4 text-center">
-        Va contenir l'initiative et les actions émises !
+      <div className="py-4">
+        <Card
+          isVertical={false}
+          leftSidetext={"Initiative"}
+          rightSideText={
+            isOwner ? (
+              <button
+                className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                onClick={() =>
+                  ShowAndSetModalContent(
+                    "Add Monster",
+                    <AddMonsterForm addMonster={addMonster} />
+                  )
+                }
+              >
+                <FaPlus />
+                <Tooltip text="Add monster" />
+              </button>
+            ) : null
+          }
+        >
+          <div className="grid grid-cols-6">
+            {initiative.map((initiative) => (
+              <Card
+                key={initiative.name}
+                isVertical={true}
+                leftSidetext={
+                  <p
+                    className={`${
+                      initiative.isMonster ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
+                    {initiative.name}
+                  </p>
+                }
+                rightSideText={initiative.initiative}
+              >
+                <button
+                  onClick={() =>
+                    ShowAndSetModalContent(
+                      `Modify initiative of ${initiative.name}`,
+                      <ModifyInitiativeForm
+                        initialInitiative={initiative}
+                        modifyInitiative={modifyInitiative}
+                      />
+                    )
+                  }
+                >
+                  <FaPen />
+                </button>
+              </Card>
+            ))}
+          </div>
+        </Card>
       </div>
-      {roomInformation?.players?.map((player, index) => (
-        <SpellsView
-          spells={player.spells}
-          socket={socket}
-          canModify={canModify(player.name)}
-          isOwner={isOwner}
-          playerName={player.name}
-          currentPlayerName={playerName}
-          roomName={roomName}
-          ShowAndSetModalContent={ShowAndSetModalContent}
-          ShowAndSetAlertContent={addNewAlert}
-        />
+      {roomInformation?.players?.map((player) => (
+        <div className="relative" key={player.name}>
+          <SpellsView
+            key={player.name}
+            player={player}
+            socket={socket}
+            canModify={canModify(player.name)}
+            isOwner={isOwner}
+            currentPlayerName={playerName}
+            roomName={roomName}
+            ShowAndSetModalContent={ShowAndSetModalContent}
+            ShowAndSetAlertContent={addNewAlert}
+          />
+        </div>
       ))}
       {isOwner ? (
         <div className="m-4">

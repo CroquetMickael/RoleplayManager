@@ -2,11 +2,23 @@ import { MonsterSocket } from 'App/Behavior/Monster/MonsterSocket'
 import { PlayerSocket } from 'App/Behavior/Player/PlayerSocket'
 import { RoomSocket } from 'App/Behavior/Room/RoomSocket'
 import { SpellSocket } from 'App/Behavior/Spell/SpellSocket'
-import { applyMixins } from 'App/Helper/helper'
 import Room from 'App/Models/Room'
 import { SocketIO } from 'App/Services/Socket'
 import { DateTime } from 'luxon'
 import { Socket } from 'socket.io'
+
+function applyMixins (derivedCtor: any, constructors: any[]) {
+  constructors.forEach((baseCtor) => {
+    Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
+      Object.defineProperty(
+        derivedCtor.prototype,
+        name,
+        /*@ts-ignore*/
+        Object.getOwnPropertyDescriptor(baseCtor.prototype, name)
+      )
+    })
+  })
+}
 
 /**
  * Standard business from here
@@ -26,6 +38,7 @@ setInterval(async () => {
 }, thirtyMinute)
 
 socketBehavior.start((socket: Socket) => {
+  console.log('Socket.io started')
   // Room Informations
   socketBehavior.getRooms(socket)
   socketBehavior.getRoomInformation(socket)

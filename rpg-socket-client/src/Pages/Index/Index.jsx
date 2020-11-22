@@ -11,7 +11,7 @@ const Index = () => (
           <h3 class="text-xl md:text-3xl mt-10">
             Check lobby page for now :{" "}
             <Link to="/lobby">
-              <button class="bg-transparent hover:bg-teal-600 text-teal-400 font-semibold hover:text-white py-2 px-4 border border-teal-400 hover:border-transparent rounded mr-2">
+              <button class="bg-transparent hover:bg-green-300 text-green-400 font-semibold hover:text-white py-2 px-4 border border-green-400 hover:border-transparent rounded mr-2">
                 Go for lobbys !
               </button>
             </Link>

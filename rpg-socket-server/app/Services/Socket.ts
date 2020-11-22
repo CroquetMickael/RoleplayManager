@@ -1,4 +1,4 @@
-import socketIo, { Socket } from 'socket.io'
+import socketIo from 'socket.io'
 import Server from '@ioc:Adonis/Core/Server'
 import { RoomSocket } from 'App/Behavior/Room/RoomSocket'
 import { SpellSocket } from 'App/Behavior/Spell/SpellSocket'
@@ -21,6 +21,7 @@ export class SocketIO {
       },
     })
     this.io.on('connection', callback)
+    console.log('Socket.io started')
     this.isReady = true
   }
 }

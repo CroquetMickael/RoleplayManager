@@ -1,6 +1,6 @@
 import Player from 'App/Models/Player'
 import Room from 'App/Models/Room'
-import { DateTime, Info } from 'luxon'
+import { DateTime } from 'luxon'
 import { Socket } from 'socket.io'
 
 export class PlayerSocket {

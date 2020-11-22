@@ -45,6 +45,12 @@ const databaseConfig: DatabaseConfig & { orm: Partial<OrmConfig> } = {
       debug: false,
     },
 
+    pg: {
+      client: 'pg',
+      connection: Env.get('DATABASE_URL'),
+      debug: Env.get('DB_DEBUG', false),
+    },
+
   },
 
   /*

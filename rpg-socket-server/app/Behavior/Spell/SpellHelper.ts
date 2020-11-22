@@ -1,4 +1,9 @@
-import { checkIfStringisNullOrEmpty } from '../../Helper/helper'
+const checkIfStringisNullOrEmpty = (string: string) => {
+  if (string === '' || string === null) {
+    return true
+  }
+  return false
+}
 
 function checkSpellInputs (spellName: string, spellDescription: string, spellCooldown: string) {
   if (
