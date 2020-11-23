@@ -60,6 +60,7 @@ socketBehavior.start((socket: Socket) => {
   //Monster CRUD
   socketBehavior.addMonster(socket)
   socketBehavior.modifyMonsterInititive(socket)
+  socketBehavior.deleteMonster(socket)
 
   //Player CRUD
   socketBehavior.modifyPlayerInititive(socket)
