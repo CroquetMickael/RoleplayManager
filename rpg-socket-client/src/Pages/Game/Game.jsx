@@ -9,7 +9,7 @@ import { useAlert } from "../../Shared/Hooks/AlertHooks";
 import { ChangePasswordForm } from "./Component/GameView/RoomInformations/ChangePasswordForm";
 import { AlertList } from "./Component/Alerts/AlertList";
 import { Card } from "../../Shared/Component/Card";
-import { FaPen, FaPlus } from "react-icons/fa";
+import { FaPen, FaPlus, FaTimes } from "react-icons/fa";
 import { Tooltip } from "../../Shared/Component/Tooltip/Tooltip";
 import { AddMonsterForm } from "./Component/GameView/RoomInformations/AddMonsterForm";
 import { ModifyInitiativeForm } from "./Component/GameView/RoomInformations/ModifyInitiative";
@@ -95,6 +95,11 @@ const Game = () => {
     socket.on("monsterHasBeenAdded", function () {
       addNewAlert("Monster Added", "The monster has been added !");
     });
+    socket.on("monsterHasBeenDeleted", function (name) {
+      addNewAlert(
+        "Monster Deleted", `The monster named: ${name} has been deleted`
+      );
+    });
   }, [socket]);
 
   const endOfTurn = () => {
@@ -158,18 +163,20 @@ const Game = () => {
           leftSidetext={"Initiative"}
           rightSideText={
             isOwner ? (
-              <button
-                className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
-                onClick={() =>
-                  ShowAndSetModalContent(
-                    "Add Monster",
-                    <AddMonsterForm addMonster={addMonster} />
-                  )
-                }
-              >
-                <FaPlus />
-                <Tooltip text="Add monster" />
-              </button>
+              <div className="mr-8">
+                <button
+                  className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                  onClick={() =>
+                    ShowAndSetModalContent(
+                      "Add Monster",
+                      <AddMonsterForm addMonster={addMonster} />
+                    )
+                  }
+                >
+                  <FaPlus />
+                  <Tooltip text="Add monster" />
+                </button>
+              </div>
             ) : null
           }
         >
@@ -189,19 +196,56 @@ const Game = () => {
                 }
                 rightSideText={initiative.initiative}
               >
-                <button
-                  onClick={() =>
-                    ShowAndSetModalContent(
-                      `Modify initiative of ${initiative.name}`,
-                      <ModifyInitiativeForm
-                        initialInitiative={initiative}
-                        modifyInitiative={modifyInitiative}
-                      />
-                    )
-                  }
-                >
-                  <FaPen />
-                </button>
+                {isOwner ? (
+                  <div className="flex flex-wrap">
+                    <button
+                      className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                      onClick={() =>
+                        ShowAndSetModalContent(
+                          `Modify initiative of ${initiative.name}`,
+                          <ModifyInitiativeForm
+                            initialInitiative={initiative}
+                            modifyInitiative={modifyInitiative}
+                          />
+                        )
+                      }
+                    >
+                      <FaPen />
+                      <Tooltip text="Modify Initiative" />
+                    </button>
+                    {initiative.isMonster ? (
+                      <button
+                        className="flex items-center justify-center p-2 m-2 text-white bg-red-300 rounded-full hover:bg-red-500 tooltip"
+                        onClick={() =>
+                          ShowAndSetModalContent(
+                            "Delete a monster",
+                            <>
+                              <p>
+                                You're about to delete a monster named :{" "}
+                                {initiative.name}
+                              </p>
+                              <button
+                                className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-red-300 rounded hover:bg-red-500"
+                                onClick={() => {
+                                  socket.emit("deleteMonster", {
+                                    playerName,
+                                    roomName,
+                                    id: initiative.id,
+                                  });
+                                }}
+                              >
+                                Confirm !
+                              </button>
+                            </>
+                          )
+                        }
+                      >
+                        <FaTimes />
+                        <Tooltip text="Delete Monster" />
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
               </Card>
             ))}
           </div>

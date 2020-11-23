@@ -49,6 +49,10 @@ const databaseConfig: DatabaseConfig & { orm: Partial<OrmConfig> } = {
       client: 'pg',
       connection: Env.get('DATABASE_URL'),
       debug: Env.get('DB_DEBUG', false),
+      pool: {
+        min: 2,
+        max: 20,
+      },
     },
 
   },
