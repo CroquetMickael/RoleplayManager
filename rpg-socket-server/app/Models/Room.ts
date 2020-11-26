@@ -17,7 +17,7 @@ export default class Room extends BaseModel {
   @column()
   public name: String
 
-  @column({columnName:'maxPlayer',serializeAs:'maxPlayer'})
+  @column({ columnName: 'maxPlayer', serializeAs: 'maxPlayer' })
   public maxPlayer: number
 
   @column()
@@ -26,10 +26,10 @@ export default class Room extends BaseModel {
   @column()
   public password: string
 
-  @column.date({columnName:'lastUsedDate',serializeAs:'lastUsedDate'})
+  @column.date({ columnName: 'lastUsedDate', serializeAs: 'lastUsedDate' })
   public lastUsedDate: DateTime
 
-  @column({columnName:'isOwnerConnected',serializeAs:'isOwnerConnected'})
+  @column({ columnName: 'isOwnerConnected', serializeAs: 'isOwnerConnected' })
   public isOwnerConnected: Boolean
 
   @hasMany(() => Player)

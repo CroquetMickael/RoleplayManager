@@ -5,8 +5,12 @@
 
 @import "tailwindcss/utilities";
 
-/*tooltip*/
 
+body * {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/*tooltip*/
 .tooltip .tooltip-text {
   @apply absolute z-50 invisible text-center;
 }

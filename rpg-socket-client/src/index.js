@@ -6,13 +6,16 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import { SocketProvider } from "./Shared/Context/SocketContext";
 import { UserProvider } from "./Shared/Context/UserContext";
+import { DarkModeProvider } from "./Shared/Context/DarkMode";
 ReactDOM.render(
   <React.StrictMode>
     <UserProvider>
       <SocketProvider>
-        <BrowserRouter>
-          <Root />
-        </BrowserRouter>
+        <DarkModeProvider>
+          <BrowserRouter>
+            <Root />
+          </BrowserRouter>
+        </DarkModeProvider>
       </SocketProvider>
     </UserProvider>
   </React.StrictMode>,

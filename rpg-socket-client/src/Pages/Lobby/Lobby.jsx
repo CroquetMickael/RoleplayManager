@@ -8,6 +8,8 @@ import { JoinRoom } from "./Components/JoinRoom";
 import { PlayerNameForm } from "./Components/PlayerNameForm";
 import { Card } from "../../Shared/Component/Card";
 import { Button } from "../../Shared/Component/Button/Button";
+import { DarkModeContext } from "../../Shared/Context/DarkMode";
+import { DarkModeButton } from "../../Shared/Component/DarkModeButton";
 
 const Lobby = () => {
   const [rooms, setRooms] = useState();
@@ -17,7 +19,6 @@ const Lobby = () => {
     UserContext
   );
   const { setIsModalOpen, Modal, ShowAndSetModalContent } = useModal();
-
   const addOrModifyPlayerName = useCallback(
     (type) => {
       ShowAndSetModalContent(
@@ -26,6 +27,7 @@ const Lobby = () => {
           setIsModalOpen={setIsModalOpen}
           setPlayerName={setPlayerName}
           playerName={playerName}
+          socket={socket}
         />
       );
     },
@@ -36,17 +38,10 @@ const Lobby = () => {
     if (!checkPlayerNameExists()) {
       addOrModifyPlayerName("Insert");
     }
-    const interval = setInterval(() => {
-        socket.emit("getRooms");
-        socket.on("rooms", (data) => {
-          console.log(data)
-          setRooms(data);
-        });
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
+    socket.emit("getRooms");
+    socket.on("updateLobbyInformation", (data) => {
+      setRooms(data);
+    });
   }, [addOrModifyPlayerName, checkPlayerNameExists, socket]);
 
   const joinRoom = (roomName, roomPassword) => {
@@ -65,6 +60,9 @@ const Lobby = () => {
 
   return (
     <>
+      <div className="p-2 text-right bg-gray-100 dark:bg-gray-700">
+        <DarkModeButton />
+      </div>
       <p className="text-3xl text-red-500">
         L'interface est susceptible de changer !
       </p>
@@ -75,7 +73,7 @@ const Lobby = () => {
                 key={room.id}
                 leftSidetext={room.name}
                 rightSideText={
-                  <span>
+                  <span className="text-gray-900 dark:text-white">
                     {room.players?.length} / {room.maxPlayer}
                   </span>
                 }

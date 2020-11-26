@@ -39,15 +39,14 @@ setInterval(async () => {
 
 socketBehavior.start((socket: Socket) => {
   console.log('Socket.io started')
-  // Room Informations
-  socketBehavior.getRooms(socket)
-  socketBehavior.getRoomInformation(socket)
 
   // Room CRUD
   socketBehavior.createRoom(socket)
   socketBehavior.joinRoom(socket)
   socketBehavior.leaveRoom(socket)
   socketBehavior.modifyRoomPassword(socket)
+  socketBehavior.getRoomInformation(socket)
+  socketBehavior.getRooms(socket)
 
   //Spell CRUD
   socketBehavior.addSpell(socket)
@@ -64,4 +63,6 @@ socketBehavior.start((socket: Socket) => {
 
   //Player CRUD
   socketBehavior.modifyPlayerInititive(socket)
+  socketBehavior.checkPlayerName(socket)
+  socketBehavior.playerCheckConnection(socket)
 })

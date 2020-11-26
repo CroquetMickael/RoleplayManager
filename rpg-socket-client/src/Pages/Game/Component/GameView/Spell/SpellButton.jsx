@@ -18,7 +18,7 @@ const SpellButton = ({
       <button
         className={`text-center items-center p-2 font-semibold ${className}`}
       >
-        <span>{children}</span>
+        <span className="text-white dark:text-white">{children}</span>
       </button>
       <ul className="absolute z-10 hidden pt-1 text-gray-700 dropdown-content">
         {spellRight?.canUse ? (

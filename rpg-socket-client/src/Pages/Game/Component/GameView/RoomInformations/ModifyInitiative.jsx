@@ -5,15 +5,11 @@ import { ErrorForm } from "../../../../../Shared/Component/ErrorForm/ErrorForm";
 const ModifyInitiativeForm = ({ modifyInitiative, initialInitiative }) => {
   const { handleSubmit, register, errors } = useForm();
   const [localInitiative, setLocalInitiative] = useState(
-    initialInitiative.initiative
+    initialInitiative
   );
 
   const addChangePasswordCall = ({ initiative }) => {
-    modifyInitiative(
-      initialInitiative.isMonster,
-      initialInitiative.id,
-      initiative
-    );
+    modifyInitiative(initiative);
   };
   return (
     <form
@@ -24,7 +20,7 @@ const ModifyInitiativeForm = ({ modifyInitiative, initialInitiative }) => {
         Initiative
       </label>
       <input
-        name="initiative" 
+        name="initiative"
         className="p-2 mb-1 border border-black"
         placeholder="Initiative to Modify"
         type="number"
