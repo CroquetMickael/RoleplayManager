@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import { SpellButton } from "./SpellButton";
 import { SpellDescription } from "./SpellDescription";
 import { AddSpellForm } from "./Forms/AddSpellForm";
@@ -6,18 +6,18 @@ import { ImportsSpellsForm } from "./Forms/ImportsSpellsForm";
 import { ModifyingSpellForm } from "./Forms/ModifyingSpellForm";
 import { FaPlus, FaDownload, FaUpload } from "react-icons/fa";
 import { Tooltip } from "../../../../../Shared/Component/Tooltip/Tooltip";
-import { Card } from "../../../../../Shared/Component/Card";
+import { SocketContext } from "../../../../../Shared/Context/SocketContext";
 
 const SpellsView = ({
   player,
   canModify,
-  socket,
   currentPlayerName,
   roomName,
   isOwner,
   ShowAndSetAlertContent,
   ShowAndSetModalContent,
 }) => {
+  const { socket } = useContext(SocketContext);
   const addSpell = (spellName, spellCooldown, spellDescription) => {
     socket.emit("addSpell", {
       playerName: player.name,
@@ -138,96 +138,104 @@ const SpellsView = ({
   }, [socket]);
 
   return (
-    <Card
-      leftSidetext={
-        <p
-          className={`rounded-full mb-2 p-1 ${
-            player.isConnected ? "bg-green-600 text-white" : "bg-gray-400"
-          }`}
-        >
-          {player.name}
-        </p>
-      }
-      rightSideText={
-        <div className="mr-12">
-          {canModify ? (
-            <div className="flex w-full">
-              <button
-                className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
-                onClick={() =>
-                  ShowAndSetModalContent(
-                    "Add a spell",
-                    <AddSpellForm addSpell={addSpell} />
-                  )
-                }
-              >
-                <FaPlus />
-                <Tooltip text="Add a spell" />
-              </button>
-
-              {player.spells?.length !== 0 && canModify ? (
-                <button className="flex items-center justify-center p-2 m-2 text-center text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip">
-                  <a
-                    href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                      JSON.stringify(convertSpellWithoutIds(player.spells))
-                    )}`}
-                    download={`${player.name}_spells.json`}
+    <>
+      <div class="mx-4 my-2 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
+        <div class="p-4">
+          <div class="flex items-center justify-between  border-black">
+            <h2
+              className={`text-lg font-semibold text-gray-900 p-2 rounded-lg ${
+                player.isConnected ? "bg-green-600 text-white" : "bg-gray-300"
+              }`}
+            >
+              {player.name}
+            </h2>
+            <h3 class="text-xl ml-4 font-medium  dark:text-white text-black">
+              Spell
+            </h3>
+            <div class="mr-12">
+              {canModify ? (
+                <div class="flex w-full space-x-4">
+                  <button
+                    className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                    onClick={() =>
+                      ShowAndSetModalContent(
+                        "Add a spell",
+                        <AddSpellForm addSpell={addSpell} />
+                      )
+                    }
                   >
-                    <FaDownload />
-                  </a>
-                  <Tooltip text="Export spells" />
-                </button>
+                    <FaPlus />
+                    <Tooltip text="Add a spell" />
+                  </button>
+                  {player.spells?.length !== 0 && canModify ? (
+                    <button className="flex items-center justify-center p-2 m-2 text-center text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip">
+                      <a
+                        href={`data:text/json;charset=utf-8,${encodeURIComponent(
+                          JSON.stringify(convertSpellWithoutIds(player.spells))
+                        )}`}
+                        download={`${player.name}_spells.json`}
+                      >
+                        <FaDownload />
+                      </a>
+                      <Tooltip text="Export spells" />
+                    </button>
+                  ) : null}
+                  <button
+                    className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
+                    onClick={() =>
+                      ShowAndSetModalContent(
+                        "Imports Spells",
+                        <ImportsSpellsForm importSpells={importSpells} />
+                      )
+                    }
+                  >
+                    <FaUpload />
+                    <Tooltip text="Import spells" />
+                  </button>
+                </div>
               ) : null}
-              <button
-                className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
-                onClick={() =>
-                  ShowAndSetModalContent(
-                    "Imports Spells",
-                    <ImportsSpellsForm importSpells={importSpells} />
-                  )
-                }
-              >
-                <FaUpload />
-                <Tooltip text="Import spells" />
-              </button>
             </div>
-          ) : null}
+          </div>
         </div>
-      }
-    >
-      {player.spells?.length === 0 ? (
-        <div className="w-full text-xl font-bold text-center">No spells !</div>
-      ) : null}
-      <div className="grid grid-cols-6 gap-4 py-4 mx-2">
-        {player.spells?.map((spell) => (
-          <SpellButton
-            key={spell.name}
-            className="w-full bg-blue-400 rounded hover:bg-blue-700"
-            textClassName="text-white"
-            isOwner={isOwner}
-            spellRight={{
-              canModify: canModify,
-              canDelete: canModify,
-              canUse: canModify && isOwner === false,
-            }}
-            coolDown={spell.currentCooldown}
-            spellClicks={{
-              useSpell: () => spellUse(spell.id),
-              modifySpell: () => modifyModal(spell),
-              deleteSpell: () => deleteSpell(spell.name, spell.id),
-              showSpellDescription: () =>
-                showSpellDescription(
-                  spell.name,
-                  spell.description,
-                  spell.defaultCooldown
-                ),
-            }}
-          >
-            {spell.name}
-          </SpellButton>
-        ))}
+        <hr class="mx-4 mt-1" />
+        {player.spells?.length === 0 ? (
+          <div className="w-full text-xl font-bold text-center text-black dark:text-white">
+            No spells !
+          </div>
+        ) : null}
+        <div class="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mx-2 p-2">
+          {player.spells?.map((spell) => (
+            <div class="inline-block w-full">
+              <SpellButton
+                key={spell.name}
+                className="w-full bg-blue-400 rounded hover:bg-blue-700"
+                textClassName="text-white"
+                isOwner={isOwner}
+                spellRight={{
+                  canModify: canModify,
+                  canDelete: canModify,
+                  canUse: canModify && isOwner === false,
+                }}
+                coolDown={spell.currentCooldown}
+                spellClicks={{
+                  useSpell: () => spellUse(spell.id),
+                  modifySpell: () => modifyModal(spell),
+                  deleteSpell: () => deleteSpell(spell.name, spell.id),
+                  showSpellDescription: () =>
+                    showSpellDescription(
+                      spell.name,
+                      spell.description,
+                      spell.defaultCooldown
+                    ),
+                }}
+              >
+                {spell.name}
+              </SpellButton>
+            </div>
+          ))}
+        </div>
       </div>
-    </Card>
+    </>
   );
 };
 

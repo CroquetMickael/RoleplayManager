@@ -4,6 +4,7 @@ import { Index } from "./Index/Index";
 import { Game } from "./Game/Game";
 import { Layout } from "../Layout/Layout";
 import { Lobby } from "./Lobby/Lobby";
+
 const LayoutRoute = ({ path, element }) => (
   <Layout>
     <Route path={path} element={element}></Route>

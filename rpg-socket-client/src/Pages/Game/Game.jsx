@@ -8,11 +8,9 @@ import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { useAlert } from "../../Shared/Hooks/AlertHooks";
 import { ChangePasswordForm } from "./Component/GameView/RoomInformations/ChangePasswordForm";
 import { AlertList } from "./Component/Alerts/AlertList";
-import { Card } from "../../Shared/Component/Card";
-import { FaPen, FaPlus, FaTimes } from "react-icons/fa";
-import { Tooltip } from "../../Shared/Component/Tooltip/Tooltip";
-import { AddMonsterForm } from "./Component/GameView/RoomInformations/AddMonsterForm";
 import { ModifyInitiativeForm } from "./Component/GameView/RoomInformations/ModifyInitiative";
+import { Initiative } from "./Component/GameView/Initiative";
+import { GameNavBar } from "./Component/GameView/GameNavBar";
 
 const Game = () => {
   const { roomName } = useParams();
@@ -25,53 +23,51 @@ const Game = () => {
   const { addNewAlert, alerts, cleanAlertFromArray } = useAlert();
 
   const navigate = useNavigate();
+
   useEffect(() => {
-    socket.emit("checkPlayer", { roomName, playerName });
-    const interval2 = setInterval(() => {
-      socket.on("playerNotAllowed", () => {
-        navigate("/");
+    socket.emit("playerCheckConnection", { roomName, playerName });
+    socket.on("playerAllowedOrReconnected", function () {
+      socket.emit("getGameInformation", roomName);
+    });
+
+    socket.on("playerNotAllowed", function () {
+      navigate("/lobby");
+    });
+    socket.on("updateGameInformation", (data) => {
+      const initiativeArray = [];
+      data.players.forEach((player) => {
+        initiativeArray.push({
+          id: player.id,
+          name: player.name,
+          initiative: player.initiative,
+          isMonster: false,
+        });
+      }); 
+      data.monsters.forEach((monster) => {
+        initiativeArray.push({
+          id: monster.id,
+          name: monster.name,
+          initiative: monster.initiative,
+          isMonster: true,
+        });
       });
-      socket.emit("getRoomInformation", roomName);
-      socket.on("roomInformation", (data) => {
-        const initiativeArray = [];
-        data.players.forEach((player) => {
-          initiativeArray.push({
-            id: player.id,
-            name: player.name,
-            initiative: player.initiative,
-            isMonster: false,
-          });
-        });
-        data.monsters.forEach((monster) => {
-          initiativeArray.push({
-            id: monster.id,
-            name: monster.name,
-            initiative: monster.initiative,
-            isMonster: true,
-          });
-        });
-        const sortedInitiative = initiativeArray.sort((a, b) => {
-          if (a.initiative < b.initiative) {
-            return 1;
-          } else if (a.initiative > b.initiative) {
-            return -1;
-          }
-          return 0;
-        });
-        setInitiative(sortedInitiative);
-        setRoomInformation(data);
+      const sortedInitiative = initiativeArray.sort((a, b) => {
+        if (a.initiative < b.initiative) {
+          return 1;
+        } else if (a.initiative > b.initiative) {
+          return -1;
+        }
+        return 0;
       });
-    }, 1000);
+      const owner = data?.owner === playerName;
+      setIsOwner(owner);
+      setInitiative(sortedInitiative);
+      setRoomInformation(data);
+    });
     return () => {
-      clearInterval(interval2);
       socket.emit("leaveRoom", { playerName, roomName });
     };
   }, [navigate, playerName, roomName, socket]);
-
-  useEffect(() => {
-    const owner = roomInformation?.owner === playerName;
-    setIsOwner(owner);
-  }, [playerName, roomInformation?.owner]);
 
   useEffect(() => {
     socket.on("RoundEnded", function () {
@@ -97,10 +93,11 @@ const Game = () => {
     });
     socket.on("monsterHasBeenDeleted", function (name) {
       addNewAlert(
-        "Monster Deleted", `The monster named: ${name} has been deleted`
+        "Monster Deleted",
+        `The monster named: ${name} has been deleted`
       );
     });
-  }, [socket]);
+  }, []);
 
   const endOfTurn = () => {
     socket.emit("endOfRound", { playerName, roomName });
@@ -117,23 +114,53 @@ const Game = () => {
     socket.emit("modifyRoomPassword", { playerName, roomName, password });
   };
 
-  const modifyInitiative = (isMonster, id, initiative) => {
-    if (isMonster) {
-      socket.emit("modifyMonsterInitiative", {
-        playerName,
-        roomName,
-        id,
-        initiative,
-      });
-    } else {
-      socket.emit("modifyPlayerInitiative", {
-        playerName,
-        roomName,
-        id,
-        initiative,
-      });
+  const modifyInitiative = (isMonster, id, name) => {
+    function emitModificationOfInitiative(initiative) {
+      if (isMonster) {
+        socket.emit("modifyMonsterInitiative", {
+          playerName,
+          roomName,
+          id,
+          initiative,
+        });
+      } else {
+        socket.emit("modifyPlayerInitiative", {
+          playerName,
+          roomName,
+          id,
+          initiative,
+        });
+      }
     }
+    ShowAndSetModalContent(
+      `Modify initiative of ${name}`,
+      <ModifyInitiativeForm
+        initialInitiative={initiative}
+        modifyInitiative={emitModificationOfInitiative}
+      />
+    );
   };
+
+  function deleteMonster(id, name) {
+    ShowAndSetModalContent(
+      "Delete a monster",
+      <>
+        <p>You're about to delete a monster named : {name}</p>
+        <button
+          className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-red-300 rounded hover:bg-red-500"
+          onClick={() => {
+            socket.emit("deleteMonster", {
+              playerName,
+              roomName,
+              id: id,
+            });
+          }}
+        >
+          Confirm !
+        </button>
+      </>
+    );
+  }
 
   const addMonster = (monsterName, monsterInitiative) => {
     socket.emit("addMonster", {
@@ -145,139 +172,70 @@ const Game = () => {
   };
 
   return (
-    <div className="relative h-full overflow-x-hidden">
-      <RoomInformation
-        roomName={roomName}
-        roomInformation={roomInformation}
-        isOwner={isOwner}
-        changePassword={() =>
-          ShowAndSetModalContent(
-            "Change room password",
-            <ChangePasswordForm changePassword={changePassword} />
-          )
-        }
-      />
-      <div className="py-4">
-        <Card
-          isVertical={false}
-          leftSidetext={"Initiative"}
-          rightSideText={
-            isOwner ? (
-              <div className="mr-8">
+    <div className="relative">
+      <div id="game" className="h-full transition-all duration-300 ease-in-out">
+        <GameNavBar />
+        <div className="flex flex-col items-stretch flex-1 h-full bg-white justify-self-stretch md:flex-row dark:bg-gray-900 dark:text-white">
+          <RoomInformation
+            roomName={roomName}
+            isOwner={isOwner}
+            password={roomInformation?.password}
+            addMonster={addMonster}
+            changePassword={() =>
+              ShowAndSetModalContent(
+                "Change room password",
+                <ChangePasswordForm changePassword={changePassword} />
+              )
+            }
+          />
+          <div className="w-full h-screen p-2">
+            <p className="text-3xl text-center text-black dark:text-white">
+              Alert system is not available right now
+            </p>
+            <Initiative
+              initiative={initiative}
+              isOwner={isOwner}
+              playerName={playerName}
+              roomName={roomName}
+              modifyInitiative={modifyInitiative}
+              deleteMonster={deleteMonster}
+              addMonster={addMonster}
+            />
+            <div class="mt-4">
+              <h3 class="md:text-3xl text-2xl ml-4 text-black dark:text-white">
+                Players
+              </h3>
+              {roomInformation?.players?.map((player) => (
+                <SpellsView
+                  key={player.name}
+                  player={player}
+                  socket={socket}
+                  canModify={canModify(player.name)}
+                  isOwner={isOwner}
+                  currentPlayerName={playerName}
+                  roomName={roomName}
+                  ShowAndSetModalContent={ShowAndSetModalContent}
+                  ShowAndSetAlertContent={addNewAlert}
+                />
+              ))}
+            </div>
+            {isOwner ? (
+              <div className="m-4">
                 <button
-                  className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
-                  onClick={() =>
-                    ShowAndSetModalContent(
-                      "Add Monster",
-                      <AddMonsterForm addMonster={addMonster} />
-                    )
-                  }
+                  onClick={() => endOfTurn()}
+                  className="w-full text-black bg-green-500 rounded hover:bg-green-700 dark:text-white"
                 >
-                  <FaPlus />
-                  <Tooltip text="Add monster" />
+                  End of round
                 </button>
               </div>
-            ) : null
-          }
-        >
-          <div className="grid grid-cols-6">
-            {initiative.map((initiative) => (
-              <Card
-                key={initiative.name}
-                isVertical={true}
-                leftSidetext={
-                  <p
-                    className={`${
-                      initiative.isMonster ? "text-red-600" : "text-green-600"
-                    }`}
-                  >
-                    {initiative.name}
-                  </p>
-                }
-                rightSideText={initiative.initiative}
-              >
-                {isOwner ? (
-                  <div className="flex flex-wrap">
-                    <button
-                      className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
-                      onClick={() =>
-                        ShowAndSetModalContent(
-                          `Modify initiative of ${initiative.name}`,
-                          <ModifyInitiativeForm
-                            initialInitiative={initiative}
-                            modifyInitiative={modifyInitiative}
-                          />
-                        )
-                      }
-                    >
-                      <FaPen />
-                      <Tooltip text="Modify Initiative" />
-                    </button>
-                    {initiative.isMonster ? (
-                      <button
-                        className="flex items-center justify-center p-2 m-2 text-white bg-red-300 rounded-full hover:bg-red-500 tooltip"
-                        onClick={() =>
-                          ShowAndSetModalContent(
-                            "Delete a monster",
-                            <>
-                              <p>
-                                You're about to delete a monster named :{" "}
-                                {initiative.name}
-                              </p>
-                              <button
-                                className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-red-300 rounded hover:bg-red-500"
-                                onClick={() => {
-                                  socket.emit("deleteMonster", {
-                                    playerName,
-                                    roomName,
-                                    id: initiative.id,
-                                  });
-                                }}
-                              >
-                                Confirm !
-                              </button>
-                            </>
-                          )
-                        }
-                      >
-                        <FaTimes />
-                        <Tooltip text="Delete Monster" />
-                      </button>
-                    ) : null}
-                  </div>
-                ) : null}
-              </Card>
-            ))}
+            ) : null}
           </div>
-        </Card>
+        </div>
       </div>
-      {roomInformation?.players?.map((player) => (
-        <div className="relative" key={player.name}>
-          <SpellsView
-            key={player.name}
-            player={player}
-            socket={socket}
-            canModify={canModify(player.name)}
-            isOwner={isOwner}
-            currentPlayerName={playerName}
-            roomName={roomName}
-            ShowAndSetModalContent={ShowAndSetModalContent}
-            ShowAndSetAlertContent={addNewAlert}
-          />
-        </div>
-      ))}
-      {isOwner ? (
-        <div className="m-4">
-          <button
-            onClick={() => endOfTurn()}
-            className="w-full bg-green-500 rounded hover:bg-green-700"
-          >
-            End of round
-          </button>
-        </div>
-      ) : null}
       {Modal}
-      <AlertList alerts={alerts} cleanAlertFromArray={cleanAlertFromArray} />
+      {false ? (
+        <AlertList alerts={alerts} cleanAlertFromArray={cleanAlertFromArray} />
+      ) : null}
     </div>
   );
 };

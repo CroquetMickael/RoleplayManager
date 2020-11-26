@@ -10,27 +10,27 @@ const AddMonsterForm = ({ addMonster }) => {
   };
   return (
     <form
-      className="flex flex-col"
+      className="flex flex-col p-1"
       onSubmit={handleSubmit(addChangePasswordCall)}
     >
-      <label htmlFor="name" className="font-bold">
+      <label htmlFor="name" className="font-bold text-black dark:text-white">
         Monster name
       </label>
       <input
         name="name"
-        className="p-2 mb-1 border border-black"
+        className="p-2 mb-1 text-black placeholder-black border border-black rounded-lg" 
         placeholder="Monster name"
         ref={register({
           required: { message: "name is required", value: true },
         })}
       />
       {errors.name && <ErrorForm>{errors.name.message}</ErrorForm>}
-      <label htmlFor="name" className="font-bold">
+      <label htmlFor="name" className="font-bold text-black dark:text-white">
         Monster initiative
       </label>
       <input
         name="initiative"
-        className="p-2 mb-1 border border-black"
+        className="p-2 mb-1 text-black placeholder-black border border-black rounded-lg"
         placeholder="Monster initiative"
         type="number"
         ref={register({
