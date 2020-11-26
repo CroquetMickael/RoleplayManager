@@ -80,5 +80,28 @@ export class MonsterSocket {
       }
     })
   }
+
+  public deleteMonster (socket: Socket) {
+    socket.on('deleteMonster', async function (Information) {
+      if (!Information) {
+        return
+      }
+      const {
+        playerName,
+        roomName,
+        id,
+      } = Information
+      const room = await Room.query().where('name', '=', roomName).first()
+      if (room && playerName === room.owner) {
+        const monster = await Monster.find(id)
+        if (monster) {
+          await monster.delete()
+          room.lastUsedDate = DateTime.utc()
+          await room.save()
+          socket.emit('monsterHasBeenDeleted', monster.name)
+        }
+      }
+    })
+  }
 }
 
