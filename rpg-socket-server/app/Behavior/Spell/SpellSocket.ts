@@ -2,6 +2,7 @@ import Room from 'App/Models/Room'
 import Spell from 'App/Models/Spell'
 import { DateTime } from 'luxon'
 import { Socket } from 'socket.io'
+import { CommonSocket, updateGameInformation } from '../CommonSocket'
 import { checkSpellInputs } from './SpellHelper'
 
 const Validator = require('jsonschema').Validator
@@ -50,7 +51,8 @@ export class SpellSocket {
           })
           room.lastUsedDate = DateTime.utc()
           await room.save()
-          socket.emit('spellHasBeenAdded', spellName)
+          socket.nsp.in(roomName).emit('spellHasBeenAdded')
+          updateGameInformation(socket, roomName)
         }
       }
     })
@@ -93,6 +95,8 @@ export class SpellSocket {
           await room.save()
         }
       }
+      socket.nsp.in(roomName).emit('spellHasBeenUsed')
+      updateGameInformation(socket, roomName)
     })
   }
 
@@ -113,18 +117,19 @@ export class SpellSocket {
       if (room) {
         const spell = await Spell.find(spellId)
         if (spell?.currentCooldown === 0 || isOwner) {
-                    spell?.merge({
-                      currentCooldown: Number(spellCurrentCooldown),
-                      defaultCooldown: Number(spellCooldown),
-                      description: spellDescription,
-                      name: spellName,
-                    })
-                    room.lastUsedDate = DateTime.utc()
-                    await spell?.save()
-                    await room.save()
-                    socket.emit('spellHasBeenModified', spellName)
+          spell?.merge({
+            currentCooldown: Number(spellCurrentCooldown),
+            defaultCooldown: Number(spellCooldown),
+            description: spellDescription,
+            name: spellName,
+          })
+          room.lastUsedDate = DateTime.utc()
+          await spell?.save()
+          await room.save()
         }
       }
+      socket.nsp.in(roomName).emit('spellHasBeenModified', spellName)
+      updateGameInformation(socket, roomName)
     })
   }
 
@@ -139,7 +144,8 @@ export class SpellSocket {
         room.lastUsedDate = DateTime.utc()
         await spell.delete()
         await room?.save()
-        socket.emit('spellHasBeenDeleted', spell.name)
+        socket.nsp.in(roomName).emit('spellHasBeenDeleted', spell.name)
+        updateGameInformation(socket, roomName)
       }
     })
   }
@@ -152,17 +158,18 @@ export class SpellSocket {
         query.preload('spells')
       }).first()
       if (room?.owner === playerName) {
-          room?.players.forEach((player) => {
-            player.spells.forEach(async (spell: Spell) => {
-              if (spell.currentCooldown !== 0) {
-                spell.currentCooldown--
-                await spell.save()
-              }
-            })
+        room?.players.forEach((player) => {
+          player.spells.forEach(async (spell: Spell) => {
+            if (spell.currentCooldown !== 0) {
+              spell.currentCooldown--
+              await spell.save()
+            }
           })
-          room.lastUsedDate = DateTime.utc()
-          await room.save()
-          socket.to(roomName).emit('RoundEnded')
+        })
+        room.lastUsedDate = DateTime.utc()
+        await room.save()
+        socket.nsp.in(roomName).emit('RoundEnded')
+        updateGameInformation(socket, roomName)
       }
     })
   }

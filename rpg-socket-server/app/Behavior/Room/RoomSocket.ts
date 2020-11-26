@@ -2,6 +2,7 @@ import Player from 'App/Models/Player'
 import Room from 'App/Models/Room'
 import { DateTime } from 'luxon'
 import { Socket } from 'socket.io'
+import { updateGameInformation, updateLobbyInformation } from '../CommonSocket'
 import { ExcedMaxPlayer, generateRoomPassword } from './RoomHelper'
 
 export class RoomSocket {
@@ -37,7 +38,7 @@ export class RoomSocket {
       }
       const { playerName, roomName, roomPassword }: { playerName: string, roomName: string, roomPassword: string } = roomInformation
       const room = await Room.query().where('name', '=', roomName).preload('players').first()
-      if (room !== null && room.owner !== playerName) {
+      if (room !== null && room.owner !== playerName && room.password === roomPassword) {
         const player = room.players.find((player) => player.name === playerName)
         if (player) {
           player.isConnected = true
@@ -55,6 +56,7 @@ export class RoomSocket {
         socket.join(roomName)
         socket.emit('roomJoined')
         socket.to(roomName).emit('PlayerJoined', playerName)
+        updateGameInformation(socket, roomName)
       }
       if (room?.owner === playerName && room?.password === roomPassword) {
         socket.emit('roomJoined')
@@ -86,6 +88,8 @@ export class RoomSocket {
         }
         await room.save()
         socket.leave(roomName)
+        socket.nsp.to(roomName).emit('playerLeave')
+        updateGameInformation(socket, roomName)
       }
     })
   }
@@ -101,27 +105,22 @@ export class RoomSocket {
         if (playerName === room.owner) {
           room.password = password
           await room.save()
-          socket.emit('roomPasswordChanged')
+          socket.nsp.in(roomName).emit('roomPasswordChanged')
+          updateGameInformation(socket, roomName)
         }
       }
     })
   }
 
   public getRooms (socket: Socket) {
-    socket.on('getRooms', async function () {
-      const rooms = await Room.query().preload('players', (query) => {
-        query.where('isConnected', true)
-      })
-      socket.emit('rooms', rooms)
+    socket.on('getRooms', function () {
+      updateLobbyInformation(socket)
     })
   }
 
   public getRoomInformation (socket: Socket) {
-    socket.on('getRoomInformation', async function (roomName) {
-      const room = await Room.query().where('name', '=', roomName).preload('players', (query) => {
-        query.preload('spells')
-      }).preload('monsters').first()
-      socket.emit('roomInformation', room)
+    socket.on('getGameInformation', function (roomName) {
+      updateGameInformation(socket, roomName)
     })
   }
 }

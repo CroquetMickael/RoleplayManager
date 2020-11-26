@@ -2,6 +2,7 @@ import Monster from 'App/Models/Monster'
 import Room from 'App/Models/Room'
 import { DateTime } from 'luxon'
 import { Socket } from 'socket.io'
+import { updateGameInformation } from '../CommonSocket'
 
 export class MonsterSocket {
   public addMonster (socket: Socket) {
@@ -24,7 +25,8 @@ export class MonsterSocket {
         })
         room.lastUsedDate = DateTime.utc()
         await room.save()
-        socket.emit('monsterHasBeenAdded', monsterName)
+        socket.nsp.in(roomName).emit('monsterHasBeenAdded', monsterName)
+        updateGameInformation(socket, roomName)
       }
     })
   }
@@ -48,7 +50,8 @@ export class MonsterSocket {
           room.lastUsedDate = DateTime.utc()
           await monster.save()
           await room.save()
-          socket.emit('monsterInitiativeHasBeenModified', monster.name)
+          socket.nsp.in(roomName).emit('monsterInitiativeHasBeenModified', monster.name)
+          updateGameInformation(socket, roomName)
         }
       }
     })
@@ -71,7 +74,8 @@ export class MonsterSocket {
           await monster.delete()
           room.lastUsedDate = DateTime.utc()
           await room.save()
-          socket.emit('monsterHasBeenDeleted', monster.name)
+          socket.nsp.in(roomName).emit('monsterHasBeenDeleted')
+          updateGameInformation(socket, roomName)
         }
       }
     })
