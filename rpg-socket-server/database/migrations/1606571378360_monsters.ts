@@ -7,7 +7,7 @@ export default class Monsters extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.timestamps(true)
-      table.integer('name').notNullable()
+      table.string('name').notNullable()
       table.integer('initiative').notNullable()
       table.integer('room_id').notNullable()
       table.foreign('room_id').references('id').inTable('rooms').onDelete('CASCADE')
