@@ -7,12 +7,13 @@ export default class Rooms extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.timestamps(true)
-      table.string('name').unique().notNullable()
+      table.text('name').notNullable()
       table.integer('maxPlayer').notNullable()
-      table.string('owner').unique().notNullable()
-      table.string('password').notNullable()
+      table.integer('owner_id').notNullable()
+      table.foreign('owner_id','FK_PlayerOwnerRoom').references('id').inTable('players')
+      table.boolean('isOwnerConnected')
+      table.text('password').notNullable()
       table.date('lastUsedDate').notNullable()
-      table.boolean('isOwnerConnected').notNullable()
     })
   }
 

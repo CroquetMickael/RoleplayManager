@@ -1,6 +1,5 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import { Root } from "./Pages/Root";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
@@ -9,15 +8,15 @@ import { UserProvider } from "./Shared/Context/UserContext";
 import { DarkModeProvider } from "./Shared/Context/DarkMode";
 ReactDOM.render(
   <React.StrictMode>
-    <UserProvider>
-      <SocketProvider>
+    <SocketProvider>
+      <UserProvider>
         <DarkModeProvider>
           <BrowserRouter>
             <Root />
           </BrowserRouter>
         </DarkModeProvider>
-      </SocketProvider>
-    </UserProvider>
+      </UserProvider>
+    </SocketProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

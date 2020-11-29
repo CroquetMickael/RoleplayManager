@@ -6,6 +6,7 @@ const PlayerNameForm = ({
   setPlayerName,
   playerName,
   socket,
+  createPlayer,
 }) => {
   const [localPlayerName, setLocalPlayerName] = useState("");
   const [error, setError] = useState("");
@@ -18,7 +19,16 @@ const PlayerNameForm = ({
     socket.on("checkPlayerReturn", (isValid) => {
       setIsValidPlayer(isValid);
       if (!isValid) {
-        setError(<><p className="font-bold">Player already exits</p><hr/><p className="text-black">Check you don't use private mode for this website.<br/> If you already used the site</p></>);
+        setError(
+          <>
+            <p className="font-bold">Player already exits</p>
+            <hr />
+            <p className="text-black">
+              Check you don't use private mode for this website.
+              <br /> If you already used the site
+            </p>
+          </>
+        );
       } else {
         setError("");
       }
@@ -33,8 +43,9 @@ const PlayerNameForm = ({
   }, [playerName]);
 
   const onSave = () => {
-    if (isValidPlayer) {
+    if (isValidPlayer && playerName === "") {
       setPlayerName(localPlayerName);
+      createPlayer(localPlayerName);
       setIsModalOpen(false);
     }
   };

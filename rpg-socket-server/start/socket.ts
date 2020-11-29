@@ -49,7 +49,7 @@ socketBehavior.start((socket: Socket) => {
   socketBehavior.getRooms(socket)
 
   //Spell CRUD
-  socketBehavior.addSpell(socket)
+  socketBehavior.addSpellToPlayer(socket)
   socketBehavior.useSpell(socket)
   socketBehavior.modifySpell(socket)
   socketBehavior.deleteSpell(socket)
@@ -58,6 +58,7 @@ socketBehavior.start((socket: Socket) => {
 
   //Monster CRUD
   socketBehavior.addMonster(socket)
+  socketBehavior.addSpellToMonster(socket)
   socketBehavior.modifyMonsterInititive(socket)
   socketBehavior.deleteMonster(socket)
 
@@ -65,4 +66,6 @@ socketBehavior.start((socket: Socket) => {
   socketBehavior.modifyPlayerInititive(socket)
   socketBehavior.checkPlayerName(socket)
   socketBehavior.playerCheckConnection(socket)
+  socketBehavior.createPlayer(socket)
+  socketBehavior.getPlayerid(socket)
 })

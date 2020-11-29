@@ -1,8 +1,9 @@
+import Log from 'App/Models/Log'
 import Room from 'App/Models/Room'
 import Spell from 'App/Models/Spell'
 import { DateTime } from 'luxon'
 import { Socket } from 'socket.io'
-import { CommonSocket, updateGameInformation } from '../CommonSocket'
+import { updateGameInformation } from '../CommonSocket'
 import { checkSpellInputs } from './SpellHelper'
 
 const Validator = require('jsonschema').Validator
@@ -23,36 +24,77 @@ const arraySpellSchema = {
 }
 
 export class SpellSocket {
-  public addSpell (socket: Socket) {
-    socket.on('addSpell', async function (Information) {
+  public addSpellToPlayer (socket: Socket) {
+    socket.on('addSpellToPlayer', async function (Information) {
       if (!Information) {
         return
       }
       const {
-        playerName,
-        roomName,
+        entityId,
+        roomId,
         spellName,
         spellCooldown,
         spellDescription,
       } = Information
-      const room = await Room.query().where('name', '=', roomName).preload('players', (query) => {
+      const room = await Room.query().where('id', '=', roomId).preload('players', (query) => {
         query.preload('spells')
       }).first()
       const validate = checkSpellInputs(spellName, spellDescription, spellCooldown)
       if (validate === true && room !== null) {
-        const player = room.players.find((player) => player.name === playerName)
+        const player = room.players.find((player) => player.id === entityId)
         if (player && !player?.spells.some((spell: Spell) => spell.name === spellName)) {
           await Spell.create({
-            playerId: player.id,
             name: spellName,
             currentCooldown: 0,
             defaultCooldown: Number(spellCooldown),
             description: spellDescription,
+            roomId: room.id,
+            playerId: player.id,
           })
           room.lastUsedDate = DateTime.utc()
           await room.save()
-          socket.nsp.in(roomName).emit('spellHasBeenAdded')
-          updateGameInformation(socket, roomName)
+          await Log.create({
+            log: `A new spell has been added for ${player.name}`,
+            roomId: room.id,
+          })
+          socket.nsp.in(room.name.toString()).emit('spellHasBeenAdded')
+          updateGameInformation(socket, room.name.toString())
+        }
+      }
+    })
+  }
+
+  public addSpellToMonster (socket: Socket) {
+    socket.on('addSpellToMonster', async function (Information) {
+      if (!Information) {
+        return
+      }
+      const {
+        entityId,
+        roomId,
+        spellName,
+        spellCooldown,
+        spellDescription,
+      } = Information
+      const room = await Room.query().where('id', '=', roomId).preload('monsters', (query) => {
+        query.preload('spells')
+      }).first()
+      const validate = checkSpellInputs(spellName, spellDescription, spellCooldown)
+      if (validate === true && room !== null) {
+        const monster = room.monsters.find((monster) => monster.id === entityId)
+        if (monster && !monster?.spells.some((spell: Spell) => spell.name === spellName)) {
+          await Spell.create({
+            name: spellName,
+            currentCooldown: 0,
+            defaultCooldown: Number(spellCooldown),
+            description: spellDescription,
+            roomId: room.id,
+            monsterId: monster.id,
+          })
+          room.lastUsedDate = DateTime.utc()
+          await room.save()
+          socket.nsp.in(room.name.toString()).emit('spellHasBeenAdded')
+          updateGameInformation(socket, room.name.toString())
         }
       }
     })
@@ -84,8 +126,8 @@ export class SpellSocket {
       if (!Information) {
         return
       }
-      const { roomName, spellId } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
+      const { roomId, spellId, entityName} = Information
+      const room = await Room.find(roomId)
       if (room !== null) {
         const spell = await Spell.findBy('id', spellId)
         if (spell) {
@@ -94,9 +136,13 @@ export class SpellSocket {
           await spell.save()
           await room.save()
         }
+        await Log.create({
+          log: `${spell?.name} has been used by ${entityName}`,
+          roomId: room.id,
+        })
+        socket.nsp.in(room.name.toString()).emit('spellHasBeenUsed')
+        updateGameInformation(socket, room.name.toString())
       }
-      socket.nsp.in(roomName).emit('spellHasBeenUsed')
-      updateGameInformation(socket, roomName)
     })
   }
 
@@ -106,14 +152,14 @@ export class SpellSocket {
       }
       const {
         spellId,
-        roomName,
+        roomId,
         spellName,
         spellCooldown,
         spellDescription,
         spellCurrentCooldown,
         isOwner,
       } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
+      const room = await Room.find(roomId)
       if (room) {
         const spell = await Spell.find(spellId)
         if (spell?.currentCooldown === 0 || isOwner) {
@@ -127,9 +173,9 @@ export class SpellSocket {
           await spell?.save()
           await room.save()
         }
+        socket.nsp.in(room?.name.toString()).emit('spellHasBeenModified', spellName)
+        updateGameInformation(socket, room?.name.toString())
       }
-      socket.nsp.in(roomName).emit('spellHasBeenModified', spellName)
-      updateGameInformation(socket, roomName)
     })
   }
 
@@ -137,15 +183,15 @@ export class SpellSocket {
     socket.on('deleteSpell', async function (Information) {
       if (!Information) {
       }
-      const { roomName, spellId } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
+      const { roomId, spellId } = Information
+      const room = await Room.find(roomId)
       const spell = await Spell.find(spellId)
       if (spell && room) {
         room.lastUsedDate = DateTime.utc()
         await spell.delete()
         await room?.save()
-        socket.nsp.in(roomName).emit('spellHasBeenDeleted', spell.name)
-        updateGameInformation(socket, roomName)
+        socket.nsp.in(room.name.toString()).emit('spellHasBeenDeleted', spell.name)
+        updateGameInformation(socket, room.name.toString())
       }
     })
   }
@@ -153,11 +199,16 @@ export class SpellSocket {
     socket.on('endOfRound', async function (roomInformation) {
       if (!roomInformation) {
       }
-      const { playerName, roomName }: { playerName: string, roomName: string } = roomInformation
-      const room = await Room.query().where('name', '=', roomName).preload('players', (query) => {
-        query.preload('spells')
-      }).first()
-      if (room?.owner === playerName) {
+      const { playerId, roomId }: { playerId: number, roomId: number } = roomInformation
+      const room = await Room.query().where('id', '=', roomId).preload('players', (query) => {
+        query.preload('spells', subQuery => {
+          subQuery.where('room_id', roomId)
+        })
+      }).preload('monsters', (query) =>
+        query.preload('spells', subquery => {
+          subquery.where('room_id', roomId)
+        })).first()
+      if (room?.ownerId === playerId && room) {
         room?.players.forEach((player) => {
           player.spells.forEach(async (spell: Spell) => {
             if (spell.currentCooldown !== 0) {
@@ -166,10 +217,22 @@ export class SpellSocket {
             }
           })
         })
+        room?.monsters.forEach((monster) => {
+          monster.spells.forEach(async (spell: Spell) => {
+            if (spell.currentCooldown !== 0) {
+              spell.currentCooldown--
+              await spell.save()
+            }
+          })
+        })
         room.lastUsedDate = DateTime.utc()
         await room.save()
-        socket.nsp.in(roomName).emit('RoundEnded')
-        updateGameInformation(socket, roomName)
+        await Log.create({
+          log: 'GM has ended the round',
+          roomId: room.id,
+        })
+        socket.nsp.in(room.name.toString()).emit('RoundEnded')
+        updateGameInformation(socket, room.name.toString())
       }
     })
   }

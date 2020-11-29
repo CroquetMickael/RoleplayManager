@@ -1,3 +1,4 @@
+import Log from 'App/Models/Log'
 import Player from 'App/Models/Player'
 import Room from 'App/Models/Room'
 import { DateTime } from 'luxon'
@@ -11,43 +12,57 @@ export class PlayerSocket {
         return
       }
       const {
-        playerName,
-        roomName,
+        playerId,
+        roomId,
         id,
         initiative,
       } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
-      if (room && playerName === room.owner) {
+      const room = await Room.find(roomId)
+      if (room && playerId === room.ownerId) {
         const player = await Player.find(id)
         if (player) {
-          player.initiative = Number(initiative)
           room.lastUsedDate = DateTime.utc()
+          room.related('players').sync({
+            [player.id]: {
+              initiative: Number(initiative),
+              isConnected: player.isConnected,
+            },
+          })
           await player.save()
           await room.save()
-          socket.nsp.in(roomName).emit('playerInitiativeHasBeenModified', player.name)
-          updateGameInformation(socket, roomName)
+          await Log.create({
+            log: `GM has changed initiative for player ${player.name}`,
+            roomId: room.id,
+          })
+          socket.nsp.in(room.name.toString()).emit('playerInitiativeHasBeenModified', player.name)
+          updateGameInformation(socket, room.name.toString())
         }
       }
     })
   }
 
   public playerCheckConnection (socket: Socket) {
-    socket.on('playerCheckConnection', async function ({roomName, playerName}) {
+    socket.on('playerCheckConnection', async function ({ roomName, playerName }) {
       const room = await Room.query().where('name', '=', roomName).preload('players').first()
       if (room) {
-        const player = room.players.find((player) => player.name === playerName)
-        if (player || room.owner === playerName) {
-          if (socket.rooms[roomName] === undefined) {
-            socket.join(roomName)
-            socket.emit('playerAllowedOrReconnected')
-          } else {
-            socket.emit('playerAllowedOrReconnected')
+        const currentPlayer = await Player.findBy('name', playerName)
+        if (currentPlayer) {
+          if (room.ownerId === currentPlayer.id) {
+            if (socket.rooms[roomName] === undefined) {
+              socket.join(roomName)
+              socket.emit('playerAllowedOrReconnected')
+            } else {
+              socket.emit('playerAllowedOrReconnected')
+            }
+          } else if (room.players.some(player => player.id === currentPlayer.id)) {
+            if (socket.rooms[roomName] === undefined) {
+              socket.join(roomName)
+              socket.emit('playerAllowedOrReconnected')
+            } else {
+              socket.emit('playerAllowedOrReconnected')
+            }
           }
-        } else {
-          socket.emit('playerNotAllowed')
         }
-      } else {
-        socket.emit('playerNotAllowed')
       }
     })
   }
@@ -60,6 +75,23 @@ export class PlayerSocket {
         isValid = false
       }
       socket.emit('checkPlayerReturn', isValid)
+    })
+  }
+
+  public createPlayer (socket: Socket) {
+    socket.on('createPlayer', async function (playerName) {
+      await Player.create({
+        name: playerName,
+      })
+    })
+  }
+
+  public getPlayerid (socket: Socket) {
+    socket.on('getPlayerId', async function (playerName: string) {
+      const player = await Player.findBy('name', playerName)
+      if (player) {
+        socket.emit('playerIdReturn', player.id)
+      }
     })
   }
 }

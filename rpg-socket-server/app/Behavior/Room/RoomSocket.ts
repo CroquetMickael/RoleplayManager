@@ -12,20 +12,24 @@ export class RoomSocket {
       }
       const { playerName, roomName, maxPlayer } = roomInformation
       const room = await Room.findBy('name', roomName)
+      const owner = await Player.findBy('name', playerName)
       if (isNaN(maxPlayer) || (room !== null)) {
         return
       }
       try {
-        await Room.create({
-          name: roomName,
-          owner: playerName,
-          isOwnerConnected: true,
-          lastUsedDate: DateTime.utc(),
-          password: generateRoomPassword(),
-          maxPlayer: Number(maxPlayer),
-        })
-        socket.join(roomName)
-        socket.emit('roomCreated')
+        if (owner) {
+          await Room.create({
+            name: roomName,
+            isOwnerConnected: true,
+            lastUsedDate: DateTime.utc(),
+            password: generateRoomPassword(),
+            maxPlayer: Number(maxPlayer),
+            ownerId: owner.id,
+          })
+          await owner.save()
+          socket.join(roomName)
+          socket.emit('roomCreated')
+        }
       } catch (ex) {
         console.log(ex)
       }
@@ -37,34 +41,37 @@ export class RoomSocket {
       if (!roomInformation) {
       }
       const { playerName, roomName, roomPassword }: { playerName: string, roomName: string, roomPassword: string } = roomInformation
-      const room = await Room.query().where('name', '=', roomName).preload('players').first()
-      if (room !== null && room.owner !== playerName && room.password === roomPassword) {
-        const player = room.players.find((player) => player.name === playerName)
-        if (player) {
-          player.isConnected = true
-          await player.save()
-        } else {
-          if (ExcedMaxPlayer(room)) {
-            return
+      const room = await Room.query().where('name', '=', roomName).preload('players', (query) => {
+        query.pivotColumns(['isConnected'])
+      }).first()
+      const owner = await Player.findBy('name', playerName)
+      if (owner) {
+        if (room !== null && room.ownerId !== owner.id && room.password === roomPassword) {
+          const player = await Player.findBy('name', playerName)
+          if (player && !room.players.find((player) => player.name === playerName)) {
+            await room.related('players').save(player)
+          } else if (player) {
+            if (ExcedMaxPlayer(room)) {
+              return
+            }
+            await room.related('players').sync({
+              [player.id]: {
+                isConnected: true,
+              },
+            })
           }
-          await Player.create({
-            name: playerName,
-            isConnected: true,
-            roomId: room.id,
-          })
+          socket.emit('roomJoined')
+          socket.join(roomName)
+          room.lastUsedDate = DateTime.utc()
         }
-        socket.join(roomName)
-        socket.emit('roomJoined')
-        socket.to(roomName).emit('PlayerJoined', playerName)
-        updateGameInformation(socket, roomName)
-      }
-      if (room?.owner === playerName && room?.password === roomPassword) {
-        socket.emit('roomJoined')
-        socket.join(roomName)
-        room.isOwnerConnected = true
-        room.lastUsedDate = DateTime.utc()
-        await room.save()
-        socket.to(roomName).emit('GMJoined')
+        if (room?.ownerId === owner.id && room?.password === roomPassword) {
+          socket.emit('roomJoined')
+          socket.join(roomName)
+          room.isOwnerConnected = true
+          room.lastUsedDate = DateTime.utc()
+          await room.save()
+          socket.to(roomName).emit('GMJoined')
+        }
       }
     })
   }
@@ -74,15 +81,19 @@ export class RoomSocket {
       if (!roomInformation) {
         return
       }
-      const { playerName, roomName } = roomInformation
+      const { playerId, roomName } = roomInformation
       const room = await Room.query().where('name', '=', roomName).preload('players').first()
       if (room) {
-        if (playerName === room.owner) {
+        if (playerId === room.ownerId) {
           room.isOwnerConnected = false
         } else {
-          const player = room.players.find(player => player.name === playerName)
+          const player = room.players.find(player => player.id === playerId)
           if (player) {
-            player.isConnected = false
+            room.related('players').sync({
+              [player.id]: {
+                isConnected: false,
+              },
+            })
             await player.save()
           }
         }
@@ -99,10 +110,10 @@ export class RoomSocket {
       if (!roomInformation) {
         return
       }
-      const { playerName, roomName, password }: { playerName: string, roomName: string, password: string } = roomInformation
+      const { playerId, roomName, password }: { playerId: number, roomName: string, password: string } = roomInformation
       const room = await Room.query().where('name', '=', roomName).first()
       if (room) {
-        if (playerName === room.owner) {
+        if (playerId === room.ownerId) {
           room.password = password
           await room.save()
           socket.nsp.in(roomName).emit('roomPasswordChanged')

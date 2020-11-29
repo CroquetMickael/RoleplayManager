@@ -1,3 +1,4 @@
+import Log from 'App/Models/Log'
 import Monster from 'App/Models/Monster'
 import Room from 'App/Models/Room'
 import { DateTime } from 'luxon'
@@ -11,13 +12,13 @@ export class MonsterSocket {
         return
       }
       const {
-        playerName,
-        roomName,
+        playerId,
+        roomId,
         monsterName,
         monsterInitiative,
       } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
-      if (room && playerName === room.owner) {
+      const room = await Room.find(roomId)
+      if (room && playerId === room.ownerId) {
         await Monster.create({
           name: monsterName,
           initiative: Number(monsterInitiative),
@@ -25,8 +26,12 @@ export class MonsterSocket {
         })
         room.lastUsedDate = DateTime.utc()
         await room.save()
-        socket.nsp.in(roomName).emit('monsterHasBeenAdded', monsterName)
-        updateGameInformation(socket, roomName)
+        await Log.create({
+          log: `A new monster appear named: ${monsterName}`,
+          roomId: room.id,
+        })
+        socket.nsp.in(room.name.toString()).emit('monsterHasBeenAdded', monsterName)
+        updateGameInformation(socket, room.name.toString())
       }
     })
   }
@@ -37,21 +42,21 @@ export class MonsterSocket {
         return
       }
       const {
-        playerName,
-        roomName,
+        playerId,
+        roomId,
         id,
         initiative,
       } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
-      if (room && playerName === room.owner) {
+      const room = await Room.find(roomId)
+      if (room && playerId === room.ownerId) {
         const monster = await Monster.find(id)
         if (monster) {
           monster.initiative = Number(initiative)
           room.lastUsedDate = DateTime.utc()
           await monster.save()
           await room.save()
-          socket.nsp.in(roomName).emit('monsterInitiativeHasBeenModified', monster.name)
-          updateGameInformation(socket, roomName)
+          socket.nsp.in(room.name.toString()).emit('monsterInitiativeHasBeenModified', monster.name)
+          updateGameInformation(socket, room.name.toString())
         }
       }
     })
@@ -63,19 +68,19 @@ export class MonsterSocket {
         return
       }
       const {
-        playerName,
-        roomName,
+        playerId,
+        roomId,
         id,
       } = Information
-      const room = await Room.query().where('name', '=', roomName).first()
-      if (room && playerName === room.owner) {
+      const room = await Room.find(roomId)
+      if (room && playerId === room.ownerId) {
         const monster = await Monster.find(id)
         if (monster) {
           await monster.delete()
           room.lastUsedDate = DateTime.utc()
           await room.save()
-          socket.nsp.in(roomName).emit('monsterHasBeenDeleted')
-          updateGameInformation(socket, roomName)
+          socket.nsp.in(room.name.toString()).emit('monsterHasBeenDeleted')
+          updateGameInformation(socket, room.name.toString())
         }
       }
     })

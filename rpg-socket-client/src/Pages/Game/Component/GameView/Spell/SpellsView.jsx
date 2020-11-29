@@ -9,23 +9,34 @@ import { Tooltip } from "../../../../../Shared/Component/Tooltip/Tooltip";
 import { SocketContext } from "../../../../../Shared/Context/SocketContext";
 
 const SpellsView = ({
-  player,
+  entity,
   canModify,
   currentPlayerName,
-  roomName,
+  roomId,
   isOwner,
+  isMonster,
   ShowAndSetAlertContent,
   ShowAndSetModalContent,
 }) => {
   const { socket } = useContext(SocketContext);
   const addSpell = (spellName, spellCooldown, spellDescription) => {
-    socket.emit("addSpell", {
-      playerName: player.name,
-      roomName,
-      spellName,
-      spellCooldown,
-      spellDescription,
-    });
+    if (!isMonster) {
+      socket.emit("addSpellToPlayer", {
+        entityId: entity.id,
+        roomId,
+        spellName,
+        spellCooldown,
+        spellDescription,
+      });
+    } else {
+      socket.emit("addSpellToMonster", {
+        entityId: entity.id,
+        roomId,
+        spellName,
+        spellCooldown,
+        spellDescription,
+      });
+    }
   };
 
   const modifySpell = (
@@ -37,7 +48,7 @@ const SpellsView = ({
   ) => {
     socket.emit("modifySpell", {
       spellId,
-      roomName,
+      roomId,
       spellName,
       spellCooldown,
       spellDescription,
@@ -62,7 +73,7 @@ const SpellsView = ({
           className="flex items-center justify-center w-full h-8 p-2 m-2 text-white bg-red-300 rounded hover:bg-red-500"
           onClick={() => {
             socket.emit("deleteSpell", {
-              roomName,
+              roomId,
               spellId,
             });
           }}
@@ -75,8 +86,8 @@ const SpellsView = ({
 
   const importSpells = (spells) => {
     socket.emit("importSpells", {
-      playerId: player.id,
-      roomName,
+      playerId: entity.id,
+      roomId,
       spells,
     });
   };
@@ -96,8 +107,11 @@ const SpellsView = ({
   };
 
   const spellUse = (spellId) => {
-    if (currentPlayerName === player.name) {
-      socket.emit("useSpell", { roomName, spellId });
+    if (
+      currentPlayerName === entity.name ||
+      (isOwner === true && isMonster === true)
+    ) {
+      socket.emit("useSpell", { roomId, spellId, entityName:entity.name });
     }
   };
 
@@ -144,10 +158,10 @@ const SpellsView = ({
           <div class="flex items-center justify-between  border-black">
             <h2
               className={`text-lg font-semibold text-gray-900 p-2 rounded-lg ${
-                player.isConnected ? "bg-green-600 text-white" : "bg-gray-300"
+                entity.isConnected ? "bg-green-600 text-white" : "bg-gray-300"
               }`}
             >
-              {player.name}
+              {entity.name}
             </h2>
             <h3 class="text-xl ml-4 font-medium  dark:text-white text-black">
               Spell
@@ -167,13 +181,13 @@ const SpellsView = ({
                     <FaPlus />
                     <Tooltip text="Add a spell" />
                   </button>
-                  {player.spells?.length !== 0 && canModify ? (
+                  {entity.spells?.length !== 0 && canModify ? (
                     <button className="flex items-center justify-center p-2 m-2 text-center text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip">
                       <a
                         href={`data:text/json;charset=utf-8,${encodeURIComponent(
-                          JSON.stringify(convertSpellWithoutIds(player.spells))
+                          JSON.stringify(convertSpellWithoutIds(entity.spells))
                         )}`}
-                        download={`${player.name}_spells.json`}
+                        download={`${entity.name}_spells.json`}
                       >
                         <FaDownload />
                       </a>
@@ -198,13 +212,13 @@ const SpellsView = ({
           </div>
         </div>
         <hr class="mx-4 mt-1" />
-        {player.spells?.length === 0 ? (
+        {entity.spells?.length === 0 ? (
           <div className="w-full text-xl font-bold text-center text-black dark:text-white">
             No spells !
           </div>
         ) : null}
         <div class="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mx-2 p-2">
-          {player.spells?.map((spell) => (
+          {entity.spells?.map((spell) => (
             <div class="inline-block w-full">
               <SpellButton
                 key={spell.name}
@@ -214,7 +228,9 @@ const SpellsView = ({
                 spellRight={{
                   canModify: canModify,
                   canDelete: canModify,
-                  canUse: canModify && isOwner === false,
+                  canUse:
+                    (canModify && isOwner === false) ||
+                    (isOwner === true && isMonster === true),
                 }}
                 coolDown={spell.currentCooldown}
                 spellClicks={{

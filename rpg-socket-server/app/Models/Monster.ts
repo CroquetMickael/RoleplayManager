@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeDelete, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import Spell from './Spell'
+import Database from '@ioc:Adonis/Lucid/Database'
 
 export default class Monster extends BaseModel {
   @column({ isPrimary: true })
@@ -19,4 +21,12 @@ export default class Monster extends BaseModel {
 
   @column({ columnName: 'room_id', serializeAs: 'roomId' })
   public roomId: number
+
+  @hasMany(() => Spell)
+  public spells: HasMany<typeof Spell>
+
+  @beforeDelete()
+  public static async activateForeignKeysForSqlite () {
+    await Database.rawQuery('PRAGMA foreign_keys = ON')
+  }
 }

@@ -8,8 +8,6 @@ import { JoinRoom } from "./Components/JoinRoom";
 import { PlayerNameForm } from "./Components/PlayerNameForm";
 import { Card } from "../../Shared/Component/Card";
 import { Button } from "../../Shared/Component/Button/Button";
-import { DarkModeContext } from "../../Shared/Context/DarkMode";
-import { DarkModeButton } from "../../Shared/Component/DarkModeButton";
 
 const Lobby = () => {
   const [rooms, setRooms] = useState();
@@ -28,6 +26,7 @@ const Lobby = () => {
           setPlayerName={setPlayerName}
           playerName={playerName}
           socket={socket}
+          createPlayer={createPlayer}
         />
       );
     },
@@ -58,11 +57,12 @@ const Lobby = () => {
     });
   };
 
+  const createPlayer = (playerName) => {
+    socket.emit("createPlayer", playerName);
+  };
+
   return (
     <>
-      <div className="p-2 text-right bg-gray-100 dark:bg-gray-700">
-        <DarkModeButton />
-      </div>
       <p className="text-3xl text-red-500">
         L'interface est susceptible de changer !
       </p>

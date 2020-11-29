@@ -7,11 +7,7 @@ export default class Players extends BaseSchema {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.timestamps(true)
-      table.string('name').unique().notNullable()
-      table.boolean('isConnected').notNullable()
-      table.integer('initiative').defaultTo(0).notNullable()
-      table.integer('room_id').unsigned()
-      table.foreign('room_id','FK_PlayerRoom').references('id').inTable('rooms').onDelete('CASCADE')
+      table.text('name').notNullable()
     })
   }
 

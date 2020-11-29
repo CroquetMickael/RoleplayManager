@@ -1,16 +1,16 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
-export default class Monsters extends BaseSchema {
-  protected tableName = 'monsters'
+export default class PlayersRoom extends BaseSchema {
+  protected tableName = 'players_room'
 
   public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
       table.timestamps(true)
-      table.string('name').notNullable()
+      table.integer('player_id').notNullable()
+      table.integer('room_id').notNullable()
+      table.boolean('isConnected').notNullable().defaultTo(false)
       table.integer('initiative').notNullable().defaultTo(0)
-      table.integer('room_id').unsigned()
-      table.foreign('room_id','FK_MonsterRoom').references('id').inTable('rooms').onDelete('CASCADE')
     })
   }
 

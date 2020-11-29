@@ -1,8 +1,10 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeDelete, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeDelete, column, HasMany, hasMany, ManyToMany, manyToMany } from '@ioc:Adonis/Lucid/Orm'
 import Player from './Player'
 import Database from '@ioc:Adonis/Lucid/Database'
 import Monster from './Monster'
+import Spell from './Spell'
+import Log from './Log'
 
 export default class Room extends BaseModel {
   @column({ isPrimary: true })
@@ -21,7 +23,7 @@ export default class Room extends BaseModel {
   public maxPlayer: number
 
   @column()
-  public owner: String
+  public ownerId: number
 
   @column()
   public password: string
@@ -32,11 +34,24 @@ export default class Room extends BaseModel {
   @column({ columnName: 'isOwnerConnected', serializeAs: 'isOwnerConnected' })
   public isOwnerConnected: Boolean
 
-  @hasMany(() => Player)
-  public players: HasMany<typeof Player>
+  @manyToMany(() => Player, {
+    localKey: 'id',
+    pivotForeignKey: 'room_id',
+    relatedKey: 'id',
+    pivotRelatedForeignKey: 'player_id',
+    pivotColumns: ['isConnected', 'initiative'],
+    pivotTable: 'players_room',
+  })
+  public players: ManyToMany<typeof Player>
 
   @hasMany(() => Monster)
   public monsters: HasMany<typeof Monster>
+
+  @hasMany(() => Spell)
+  public spells: HasMany<typeof Spell>
+
+  @hasMany(() => Log)
+  public logs: HasMany<typeof Log>
 
   @beforeDelete()
   public static async activateForeignKeysForSqlite () {

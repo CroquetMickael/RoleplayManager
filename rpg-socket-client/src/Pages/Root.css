@@ -5,7 +5,6 @@
 
 @import "tailwindcss/utilities";
 
-
 body * {
   @apply transition-all duration-300 ease-in-out;
 }
@@ -20,18 +19,18 @@ body * {
 }
 
 /* Tab content - closed */
-.tab-content {
+.accordeon-content {
   max-height: 0;
   -webkit-transition: max-height 0.35s;
   -o-transition: max-height 0.35s;
   transition: max-height 0.35s;
 }
 /* :checked - resize to full height */
-.tab input:checked ~ .tab-content {
+.accordeon input:checked ~ .accordeon-content {
   max-height: 100vh;
 }
 /* Label formatting when open */
-.tab input:checked + label {
+.accordeon input:checked + label {
   /*@apply text-xl p-5 border-l-2 border-indigo-500 bg-gray-100 text-indigo*/
   border-left-width: 2px; /*.border-l-2*/
   border-color: #6574cd; /*.border-indigo*/
@@ -40,20 +39,20 @@ body * {
 }
 
 /* Icon formatting - closed */
-.tab input[type="checkbox"] + label div.icon-container {
+.accordeon input[type="checkbox"] + label div.icon-container {
   font-weight: bold; /*.font-bold*/
   border-width: 1px; /*.border*/
   border-radius: 9999px; /*.rounded-full */
   border-color: #b8c2cc; /*.border-grey*/
 }
 /* Icon formatting - open */
-.tab input[type="checkbox"]:checked + label div.icon-container {
+.accordeon input[type="checkbox"]:checked + label div.icon-container {
   background-color: #6574cd; /*.bg-indigo*/
   color: #f8fafc; /*.text-grey-lightest*/
 }
 
 /* Icon formatting - open */
-.tab input[type="checkbox"]:checked + label div.icon-container svg.icon {
+.accordeon input[type="checkbox"]:checked + label div.icon-container svg.icon {
   transform: scaleY(-1);
 }
 

@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, beforeDelete, column } from '@ioc:Adonis/Lucid/Orm'
+import Database from '@ioc:Adonis/Lucid/Database'
 
 export default class Spell extends BaseModel {
   @column({ isPrimary: true })
@@ -14,15 +15,26 @@ export default class Spell extends BaseModel {
   @column()
   public name: String
 
-  @column({columnName:'defaultCooldown', serializeAs:'defaultCooldown'})
+  @column({ columnName: 'defaultCooldown', serializeAs: 'defaultCooldown' })
   public defaultCooldown: number
 
-  @column({columnName:'currentCooldown', serializeAs:'currentCooldown'})
+  @column({ columnName: 'currentCooldown', serializeAs: 'currentCooldown' })
   public currentCooldown: number
 
   @column()
   public description: String
 
-  @column({ columnName: 'player_id', serializeAs:'playerId' })
+  @column()
+  public roomId: number
+
+  @column({ columnName: 'player_id' })
   public playerId: number
+
+  @column({ columnName: 'monster_id' })
+  public monsterId: number
+
+  @beforeDelete()
+  public static async activateForeignKeysForSqlite () {
+    await Database.rawQuery('PRAGMA foreign_keys = ON')
+  }
 }
