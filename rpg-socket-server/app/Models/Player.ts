@@ -3,6 +3,7 @@ import { BaseModel, beforeDelete, column, computed, HasMany, hasMany } from '@io
 import Spell from './Spell'
 import Room from './Room'
 import Database from '@ioc:Adonis/Lucid/Database'
+import Env from '@ioc:Adonis/Core/Env'
 
 export default class Player extends BaseModel {
   @column({ isPrimary: true })
@@ -35,6 +36,8 @@ export default class Player extends BaseModel {
 
   @beforeDelete()
   public static async activateForeignKeysForSqlite () {
-    await Database.rawQuery('PRAGMA foreign_keys = ON')
+    if (Env.get('NODE_ENV') === 'development') {
+      await Database.rawQuery('PRAGMA foreign_keys = ON')
+    }
   }
 }

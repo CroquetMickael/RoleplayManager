@@ -5,6 +5,7 @@ import Database from '@ioc:Adonis/Lucid/Database'
 import Monster from './Monster'
 import Spell from './Spell'
 import Log from './Log'
+import Env from '@ioc:Adonis/Core/Env'
 
 export default class Room extends BaseModel {
   @column({ isPrimary: true })
@@ -55,6 +56,8 @@ export default class Room extends BaseModel {
 
   @beforeDelete()
   public static async activateForeignKeysForSqlite () {
-    await Database.rawQuery('PRAGMA foreign_keys = ON')
+    if (Env.get('NODE_ENV') === 'development') {
+      await Database.rawQuery('PRAGMA foreign_keys = ON')
+    }
   }
 }

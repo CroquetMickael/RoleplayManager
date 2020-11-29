@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, beforeDelete, column, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Spell from './Spell'
 import Database from '@ioc:Adonis/Lucid/Database'
+import Env from '@ioc:Adonis/Core/Env'
 
 export default class Monster extends BaseModel {
   @column({ isPrimary: true })
@@ -27,6 +28,8 @@ export default class Monster extends BaseModel {
 
   @beforeDelete()
   public static async activateForeignKeysForSqlite () {
-    await Database.rawQuery('PRAGMA foreign_keys = ON')
+    if (Env.get('NODE_ENV') === 'development') {
+      await Database.rawQuery('PRAGMA foreign_keys = ON')
+    }
   }
 }
