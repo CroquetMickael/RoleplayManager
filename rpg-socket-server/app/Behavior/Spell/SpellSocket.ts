@@ -126,7 +126,7 @@ export class SpellSocket {
       if (!Information) {
         return
       }
-      const { roomId, spellId, entityName} = Information
+      const { roomId, spellId, entityName } = Information
       const room = await Room.find(roomId)
       if (room !== null) {
         const spell = await Spell.findBy('id', spellId)
@@ -184,14 +184,18 @@ export class SpellSocket {
       if (!Information) {
       }
       const { roomId, spellId } = Information
-      const room = await Room.find(roomId)
-      const spell = await Spell.find(spellId)
-      if (spell && room) {
-        room.lastUsedDate = DateTime.utc()
-        await spell.delete()
-        await room?.save()
-        socket.nsp.in(room.name.toString()).emit('spellHasBeenDeleted', spell.name)
-        updateGameInformation(socket, room.name.toString())
+      try {
+        const room = await Room.find(roomId)
+        const spell = await Spell.find(spellId)
+        if (spell && room) {
+          room.lastUsedDate = DateTime.utc()
+          await spell.delete()
+          await room?.save()
+          socket.nsp.in(room.name.toString()).emit('spellHasBeenDeleted', spell.name)
+          updateGameInformation(socket, room.name.toString())
+        }
+      } catch (e) {
+        console.log(e)
       }
     })
   }
