@@ -11,6 +11,7 @@ const PlayerNameForm = ({
   const [localPlayerName, setLocalPlayerName] = useState("");
   const [error, setError] = useState("");
   const [isValidPlayer, setIsValidPlayer] = useState(false);
+  const [isAlreadyUser, setIsAlreadyUser] = useState(false);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -43,9 +44,11 @@ const PlayerNameForm = ({
   }, [playerName]);
 
   const onSave = () => {
-    if (isValidPlayer && playerName === "") {
+    if ((isValidPlayer && playerName === "") || isAlreadyUser) {
       setPlayerName(localPlayerName);
-      createPlayer(localPlayerName);
+      if (!isAlreadyUser) {
+        createPlayer(localPlayerName);
+      }
       setIsModalOpen(false);
     }
   };
@@ -59,6 +62,21 @@ const PlayerNameForm = ({
         onChange={(event) => setLocalPlayerName(event.target.value)}
       ></input>
       <ErrorForm>{error}</ErrorForm>
+      {!isValidPlayer ? (
+        <label className="inline-flex items-center mt-3">
+          <input
+            type="checkbox"
+            className="w-5 h-5 text-red-600 form-checkbox"
+            onChange={(e) => {
+              console.log(e)
+              setIsAlreadyUser(e.target.checked)}}
+            value={isAlreadyUser}
+          ></input>
+          <span className="px-2">
+            I assume, that I have already used this website before and this is my pseudo
+          </span>
+        </label>
+      ) : null}
       <button
         className="flex items-center justify-center w-full h-8 p-2 text-white bg-blue-300 rounded hover:bg-blue-500"
         onClick={() => onSave()}
