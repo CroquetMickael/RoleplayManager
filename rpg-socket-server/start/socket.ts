@@ -2,6 +2,7 @@ import { MonsterSocket } from 'App/Behavior/Monster/MonsterSocket'
 import { PlayerSocket } from 'App/Behavior/Player/PlayerSocket'
 import { RoomSocket } from 'App/Behavior/Room/RoomSocket'
 import { SpellSocket } from 'App/Behavior/Spell/SpellSocket'
+import Log from 'App/Models/Log'
 import Room from 'App/Models/Room'
 import { SocketIO } from 'App/Services/Socket'
 import { DateTime } from 'luxon'
@@ -30,9 +31,17 @@ const thirtyMinute = 1800000
 
 setInterval(async () => {
   const rooms = await Room.all()
+  const logs = await Log.all()
   rooms.forEach(async room => {
-    if (DateTime.utc().month - room.lastUsedDate.month === 1) {
+    const diffRoom = DateTime.utc().diff(room.lastUsedDate, ['years', 'months', 'days', 'hours'])
+    if (diffRoom.months === 1) {
       await room.delete()
+    }
+  })
+  logs.forEach(async log => {
+    const diffLog = DateTime.utc().diff(log.createdAt, ['years', 'months', 'days', 'hours'])
+    if (diffLog.days === 1) {
+      await log.delete()
     }
   })
 }, thirtyMinute)
