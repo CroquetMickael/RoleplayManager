@@ -16,6 +16,9 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
+    cd rpg-socket-client
+  displayName: 'Move to client'
+- script: |
     npm install
   displayName: 'Install client'
 - script: |  
