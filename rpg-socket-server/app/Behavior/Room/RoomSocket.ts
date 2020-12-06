@@ -6,7 +6,7 @@ import { updateGameInformation, updateLobbyInformation } from '../CommonSocket'
 import { ExcedMaxPlayer, generateRoomPassword } from './RoomHelper'
 
 export class RoomSocket {
-  public createRoom (socket: Socket) {
+  public createRoom(socket: Socket) {
     socket.on('createRoom', async function (roomInformation) {
       if (!roomInformation) {
       }
@@ -36,7 +36,7 @@ export class RoomSocket {
     })
   }
 
-  public joinRoom (socket: Socket) {
+  public joinRoom(socket: Socket) {
     socket.on('joinRoom', async function (roomInformation) {
       if (!roomInformation) {
       }
@@ -49,16 +49,27 @@ export class RoomSocket {
         if (room !== null && room.ownerId !== owner.id && room.password === roomPassword) {
           const player = await Player.findBy('name', playerName)
           if (player && !room.players.find((player) => player.name === playerName)) {
-            await room.related('players').save(player)
-          } else if (player) {
             if (ExcedMaxPlayer(room)) {
               return
             }
-            await room.related('players').sync({
-              [player.id]: {
+            await room.related('players').attach({
+              [player.id]:
+              {
                 isConnected: true,
-              },
+                initiative: 0
+              }
             })
+          } else if (player) {
+            const currentPlayer = room.players.find((wantedPlayer) => wantedPlayer.id == player.id)
+            if (currentPlayer) {
+              await room.related('players').detach([currentPlayer.id])
+              await room.related('players').attach({
+                [currentPlayer.id]: {
+                  isConnected: true,
+                  initiative: currentPlayer.initiative
+                },
+              })
+            }
           }
           socket.emit('roomJoined')
           socket.join(roomName)
@@ -76,7 +87,7 @@ export class RoomSocket {
     })
   }
 
-  public leaveRoom (socket: Socket) {
+  public leaveRoom(socket: Socket) {
     socket.on('leaveRoom', async function (roomInformation) {
       if (!roomInformation) {
         return
@@ -89,12 +100,13 @@ export class RoomSocket {
         } else {
           const player = room.players.find(player => player.id === playerId)
           if (player) {
-            room.related('players').sync({
+            room.related('players').detach([player.id])
+            room.related('players').attach({
               [player.id]: {
                 isConnected: false,
+                initiative: player.initiative
               },
             })
-            await player.save()
           }
         }
         await room.save()
@@ -105,7 +117,7 @@ export class RoomSocket {
     })
   }
 
-  public modifyRoomPassword (socket: Socket) {
+  public modifyRoomPassword(socket: Socket) {
     socket.on('modifyRoomPassword', async function (roomInformation) {
       if (!roomInformation) {
         return
@@ -123,13 +135,13 @@ export class RoomSocket {
     })
   }
 
-  public getRooms (socket: Socket) {
+  public getRooms(socket: Socket) {
     socket.on('getRooms', function () {
       updateLobbyInformation(socket)
     })
   }
 
-  public getRoomInformation (socket: Socket) {
+  public getRoomInformation(socket: Socket) {
     socket.on('getGameInformation', function (roomName) {
       updateGameInformation(socket, roomName)
     })

@@ -1,9 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, beforeDelete, column, computed, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, computed, HasMany, hasMany } from '@ioc:Adonis/Lucid/Orm'
 import Spell from './Spell'
 import Room from './Room'
-import Database from '@ioc:Adonis/Lucid/Database'
-import Env from '@ioc:Adonis/Core/Env'
 
 export default class Player extends BaseModel {
   @column({ isPrimary: true })
@@ -16,12 +14,12 @@ export default class Player extends BaseModel {
   public updatedAt: DateTime
 
   @computed()
-  public get initiative () {
+  public get initiative() {
     return this.$extras.pivot_initiative
   }
 
   @computed()
-  public get isConnected () {
+  public get isConnected() {
     return this.$extras.pivot_isConnected
   }
 
@@ -34,10 +32,4 @@ export default class Player extends BaseModel {
   @hasMany(() => Spell)
   public spells: HasMany<typeof Spell>
 
-  @beforeDelete()
-  public static async activateForeignKeysForSqlite () {
-    if (Env.get('NODE_ENV') === 'development') {
-      await Database.rawQuery('PRAGMA foreign_keys = ON')
-    }
-  }
 }

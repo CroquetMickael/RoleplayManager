@@ -34,10 +34,4 @@ export default class Spell extends BaseModel {
   @column({ columnName: 'monster_id' })
   public monsterId: number
 
-  @beforeDelete()
-  public static async activateForeignKeysForSqlite () {
-    if (Env.get('NODE_ENV') === 'development') {
-      await Database.rawQuery('PRAGMA foreign_keys = ON')
-    }
-  }
 }

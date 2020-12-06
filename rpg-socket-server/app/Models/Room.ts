@@ -53,11 +53,4 @@ export default class Room extends BaseModel {
 
   @hasMany(() => Log)
   public logs: HasMany<typeof Log>
-
-  @beforeDelete()
-  public static async activateForeignKeysForSqlite () {
-    if (Env.get('NODE_ENV') === 'development') {
-      await Database.rawQuery('PRAGMA foreign_keys = ON')
-    }
-  }
 }

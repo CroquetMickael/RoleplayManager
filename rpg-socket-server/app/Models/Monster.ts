@@ -25,11 +25,4 @@ export default class Monster extends BaseModel {
 
   @hasMany(() => Spell)
   public spells: HasMany<typeof Spell>
-
-  @beforeDelete()
-  public static async activateForeignKeysForSqlite () {
-    if (Env.get('NODE_ENV') === 'development') {
-      await Database.rawQuery('PRAGMA foreign_keys = ON')
-    }
-  }
 }
