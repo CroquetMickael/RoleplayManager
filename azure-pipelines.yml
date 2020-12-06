@@ -19,7 +19,7 @@ steps:
   workingDirectory: rpg-socket-client
   displayName: 'Install client'
 - script: |  
-    npm test -- --coverage
+    npm test:coverage
   workingDirectory: rpg-socket-client
   displayName: 'Test client'
 - script: |  
