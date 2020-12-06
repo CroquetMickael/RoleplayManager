@@ -14,16 +14,15 @@ steps:
   inputs:
     versionSpec: '10.x'
   displayName: 'Install Node.js'
-
-- script: |
-    cd rpg-socket-client
-  displayName: 'Move to client'
 - script: |
     npm install
+  workingDirectory: rpg-socket-client
   displayName: 'Install client'
 - script: |  
     npm test -- --coverage
+  workingDirectory: rpg-socket-client
   displayName: 'Test client'
 - script: |  
     npm build
+  workingDirectory: rpg-socket-client
   displayName: 'Build client'
