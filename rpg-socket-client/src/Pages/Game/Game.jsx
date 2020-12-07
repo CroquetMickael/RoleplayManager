@@ -21,7 +21,7 @@ const Game = () => {
   const [roomInformation, setRoomInformation] = useState();
   const [initiative, setInitiative] = useState([]);
   const [isOwner, setIsOwner] = useState(false);
-  const { Modal, ShowAndSetModalContent } = useModal();
+  const { Modal, ShowAndSetModalContent, setIsModalOpen } = useModal();
   const { addNewAlert, alerts, cleanAlertFromArray } = useAlert();
   const [index, setIndex] = useState(1);
 
@@ -136,6 +136,7 @@ const Game = () => {
           initiative,
         });
       }
+      setIsModalOpen(false);
     }
     ShowAndSetModalContent(
       `Modify initiative of ${name}`,
@@ -159,6 +160,7 @@ const Game = () => {
               roomId: roomInformation.id,
               id: id,
             });
+            setIsModalOpen(false);
           }}
         >
           Confirm !
@@ -227,6 +229,10 @@ const Game = () => {
                       isMonster={false}
                       currentPlayerName={playerName}
                       roomId={roomInformation.id}
+                      modal={{
+                        ShowAndSetModalContent: ShowAndSetModalContent,
+                        setIsModalOpen: setIsModalOpen,
+                      }}
                       ShowAndSetModalContent={ShowAndSetModalContent}
                       ShowAndSetAlertContent={addNewAlert}
                     />
@@ -248,7 +254,10 @@ const Game = () => {
                       isOwner={isOwner}
                       currentPlayerName={playerName}
                       roomId={roomInformation.id}
-                      ShowAndSetModalContent={ShowAndSetModalContent}
+                      modal={{
+                        ShowAndSetModalContent: ShowAndSetModalContent,
+                        setIsModalOpen: setIsModalOpen,
+                      }}
                       ShowAndSetAlertContent={addNewAlert}
                     />
                   ))}
@@ -270,7 +279,10 @@ const Game = () => {
                   isOwner={isOwner}
                   currentPlayerName={playerName}
                   roomId={roomInformation.id}
-                  ShowAndSetModalContent={ShowAndSetModalContent}
+                  modal={{
+                    ShowAndSetModalContent: ShowAndSetModalContent,
+                    setIsModalOpen: setIsModalOpen,
+                  }}
                   ShowAndSetAlertContent={addNewAlert}
                 />
               ))}

@@ -16,7 +16,7 @@ const SpellsView = ({
   isOwner,
   isMonster,
   ShowAndSetAlertContent,
-  ShowAndSetModalContent,
+  modal,
 }) => {
   const { socket } = useContext(SocketContext);
   const addSpell = (spellName, spellCooldown, spellDescription) => {
@@ -37,6 +37,7 @@ const SpellsView = ({
         spellDescription,
       });
     }
+    modal.setIsModalOpen(false);
   };
 
   const modifySpell = (
@@ -55,17 +56,18 @@ const SpellsView = ({
       spellCurrentCooldown,
       isOwner,
     });
+    modal.setIsModalOpen(false);
   };
 
   const modifyModal = (spell) => {
-    ShowAndSetModalContent(
+    modal.ShowAndSetModalContent(
       "Modify a spell",
       <ModifyingSpellForm modifySpell={modifySpell} spell={spell} />
     );
   };
 
   const deleteSpell = (spellName, spellId) => {
-    ShowAndSetModalContent(
+    modal.ShowAndSetModalContent(
       "Delete a spell",
       <>
         <p>You're about to delete a spell named : {spellName}</p>
@@ -76,6 +78,7 @@ const SpellsView = ({
               roomId,
               spellId,
             });
+            modal.setIsModalOpen(false);
           }}
         >
           Confirm !
@@ -111,12 +114,12 @@ const SpellsView = ({
       currentPlayerName === entity.name ||
       (isOwner === true && isMonster === true)
     ) {
-      socket.emit("useSpell", { roomId, spellId, entityName:entity.name });
+      socket.emit("useSpell", { roomId, spellId, entityName: entity.name });
     }
   };
 
   const showSpellDescription = (spellName, spellDescription, spellCooldown) => {
-    ShowAndSetModalContent(
+    modal.ShowAndSetModalContent(
       spellName,
       <SpellDescription
         cooldown={spellCooldown}
@@ -153,9 +156,9 @@ const SpellsView = ({
 
   return (
     <>
-      <div class="mx-4 my-2 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
-        <div class="p-4">
-          <div class="flex items-center justify-between  border-black">
+      <div className="mx-4 my-2 bg-white rounded-lg shadow-md dark:bg-gray-800 dark:text-white">
+        <div className="p-4">
+          <div className="flex items-center justify-between border-black">
             <h2
               className={`text-lg font-semibold text-gray-900 p-2 rounded-lg ${
                 entity.isConnected ? "bg-green-600 text-white" : "bg-gray-300"
@@ -163,16 +166,16 @@ const SpellsView = ({
             >
               {entity.name}
             </h2>
-            <h3 class="text-xl ml-4 font-medium  dark:text-white text-black">
+            <h3 className="ml-4 text-xl font-medium text-black dark:text-white">
               Spell
             </h3>
-            <div class="mr-12">
+            <div className="mr-12">
               {canModify ? (
-                <div class="flex w-full space-x-4">
+                <div className="flex w-full space-x-4">
                   <button
                     className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
                     onClick={() =>
-                      ShowAndSetModalContent(
+                      modal.ShowAndSetModalContent(
                         "Add a spell",
                         <AddSpellForm addSpell={addSpell} />
                       )
@@ -197,7 +200,7 @@ const SpellsView = ({
                   <button
                     className="flex items-center justify-center p-2 m-2 text-white bg-blue-300 rounded-full hover:bg-blue-500 tooltip"
                     onClick={() =>
-                      ShowAndSetModalContent(
+                      modal.ShowAndSetModalContent(
                         "Imports Spells",
                         <ImportsSpellsForm importSpells={importSpells} />
                       )
@@ -211,15 +214,15 @@ const SpellsView = ({
             </div>
           </div>
         </div>
-        <hr class="mx-4 mt-1" />
+        <hr className="mx-4 mt-1" />
         {entity.spells?.length === 0 ? (
           <div className="w-full text-xl font-bold text-center text-black dark:text-white">
             No spells !
           </div>
         ) : null}
-        <div class="grid grid-cols-3 lg:grid-cols-6 gap-2 md:gap-4 mx-2 p-2">
+        <div className="grid grid-cols-3 gap-2 p-2 mx-2 lg:grid-cols-6 md:gap-4">
           {entity.spells?.map((spell) => (
-            <div class="inline-block w-full">
+            <div className="inline-block w-full">
               <SpellButton
                 key={spell.name}
                 className="w-full bg-blue-400 rounded hover:bg-blue-700"

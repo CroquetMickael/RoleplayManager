@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly 1`] = `
+<div>
+  <button
+    class="w-full p-1 my-1 text-white bg-blue-400 rounded-sm hover:bg-blue-600"
+  >
+    button children :)
+  </button>
+</div>
+`;

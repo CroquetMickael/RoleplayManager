@@ -6,7 +6,7 @@ import { useModal } from "../../Shared/Hooks/ModalHooks";
 import { CreateRoomForm } from "./Components/CreateRoomForm";
 import { JoinRoom } from "./Components/JoinRoom";
 import { PlayerNameForm } from "./Components/PlayerNameForm";
-import { Card } from "../../Shared/Component/Card";
+import { Card } from "../../Shared/Component/Card/Card";
 import { Button } from "../../Shared/Component/Button/Button";
 
 const Lobby = () => {

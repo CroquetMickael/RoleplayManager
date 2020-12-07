@@ -1,0 +1,105 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly a non vertical Card with left, right text 1`] = `
+<div>
+  <div
+    class="mx-4 my-2 text-black bg-white rounded-lg shadow-md dark:bg-gray-700 dark:text-white"
+  >
+    <div
+      class="p-4"
+    >
+      <div
+        class="flex items-center justify-between  border-black border-b"
+      >
+        <h2
+          class="-mt-1 text-lg font-semibold text-gray-900 dark:text-white"
+        >
+          lefttext
+        </h2>
+        <small
+          class="text-sm text-gray-900 dark:text-white"
+        >
+          righttext
+        </small>
+      </div>
+    </div>
+    children
+  </div>
+</div>
+`;
+
+exports[`renders correctly a non vertical Card without left, right text 1`] = `
+<div>
+  <div
+    class="mx-4 my-2 text-black bg-white rounded-lg shadow-md dark:bg-gray-700 dark:text-white"
+  >
+    <div
+      class="p-4"
+    >
+      <div
+        class="flex items-center justify-between  border-black border-b"
+      >
+        <h2
+          class="-mt-1 text-lg font-semibold text-gray-900 dark:text-white"
+        />
+        <small
+          class="text-sm text-gray-900 dark:text-white"
+        />
+      </div>
+    </div>
+    children
+  </div>
+</div>
+`;
+
+exports[`renders correctly a vertical Card with left, right text 1`] = `
+<div>
+  <div
+    class="mx-4 my-2 text-black bg-white rounded-lg shadow-md dark:bg-gray-700 dark:text-white"
+  >
+    <div
+      class="p-4"
+    >
+      <div
+        class="flex items-center justify-between  border-black flex-col"
+      >
+        <h2
+          class="-mt-1 text-lg font-semibold text-gray-900 dark:text-white"
+        >
+          lefttext
+        </h2>
+        <small
+          class="text-sm text-gray-900 dark:text-white"
+        >
+          righttext
+        </small>
+      </div>
+    </div>
+    children
+  </div>
+</div>
+`;
+
+exports[`renders correctly a vertical Card without left, right text 1`] = `
+<div>
+  <div
+    class="mx-4 my-2 text-black bg-white rounded-lg shadow-md dark:bg-gray-700 dark:text-white"
+  >
+    <div
+      class="p-4"
+    >
+      <div
+        class="flex items-center justify-between  border-black flex-col"
+      >
+        <h2
+          class="-mt-1 text-lg font-semibold text-gray-900 dark:text-white"
+        />
+        <small
+          class="text-sm text-gray-900 dark:text-white"
+        />
+      </div>
+    </div>
+    children
+  </div>
+</div>
+`;

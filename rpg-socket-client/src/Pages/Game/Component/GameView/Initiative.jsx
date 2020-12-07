@@ -1,11 +1,10 @@
 import React, { memo } from "react";
 import { FaPen, FaTimes } from "react-icons/fa";
-import { Card } from "../../../../Shared/Component/Card";
+import { Card } from "../../../../Shared/Component/Card/Card";
 import { Tooltip } from "../../../../Shared/Component/Tooltip/Tooltip";
-import { AddMonsterForm } from "./RoomInformations/AddMonsterForm";
 
 const Initiative = memo(
-  ({ isOwner, initiative, deleteMonster, modifyInitiative, addMonster }) => {
+  ({ isOwner, initiative, deleteMonster, modifyInitiative }) => {
     return (
       <>
         <h3 className="ml-4 text-2xl text-black md:text-3xl dark:text-white">

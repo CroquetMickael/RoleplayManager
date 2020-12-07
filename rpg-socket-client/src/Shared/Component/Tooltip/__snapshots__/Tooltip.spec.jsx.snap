@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`renders correctly 1`] = `
+<div>
+  <span
+    class="p-2 mt-10 ml-12 bg-blue-200 rounded tooltip-text"
+  />
+</div>
+`;

@@ -1,7 +1,6 @@
-import { logRoles } from "@testing-library/react";
 import React, { useEffect, useRef } from "react";
 import { FaPen } from "react-icons/fa";
-import { Card } from "../../../../../Shared/Component/Card";
+import { Card } from "../../../../../Shared/Component/Card/Card";
 import { AddMonsterForm } from "./AddMonsterForm";
 
 const RoomInformation = ({
