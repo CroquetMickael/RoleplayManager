@@ -222,9 +222,8 @@ const SpellsView = ({
         ) : null}
         <div className="grid grid-cols-3 gap-2 p-2 mx-2 lg:grid-cols-6 md:gap-4">
           {entity.spells?.map((spell) => (
-            <div className="inline-block w-full">
+            <div className="inline-block w-full" key={spell.name}>
               <SpellButton
-                key={spell.name}
                 className="w-full bg-blue-400 rounded hover:bg-blue-700"
                 textClassName="text-white"
                 isOwner={isOwner}

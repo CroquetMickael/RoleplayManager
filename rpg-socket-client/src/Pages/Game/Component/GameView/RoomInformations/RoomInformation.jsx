@@ -43,8 +43,11 @@ const RoomInformation = ({
       <div className="relative mx-2 md:block dark:text-white">
         <p className="py-2 text-2xl text-black dark:text-gray-200">Logs</p>
         <div className="hidden w-full p-2 overflow-y-auto text-black border md:block max-h-96 h-96 dark:bg-gray-800 dark:text-white">
-          {logs?.map((log) => (
-            <p className="inline-block w-full text-black dark:text-white">
+          {logs?.map((log, key) => (
+            <p
+              className="inline-block w-full text-black dark:text-white"
+              key={key}
+            >
               {Intl.DateTimeFormat("en-GB", {
                 year: "numeric",
                 month: "numeric",

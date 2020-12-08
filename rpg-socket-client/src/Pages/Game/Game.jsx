@@ -139,9 +139,10 @@ const Game = () => {
       setIsModalOpen(false);
     }
     ShowAndSetModalContent(
-      `Modify initiative of ${name}`,
+      `Modifying initiative of ${name}`,
       <ModifyInitiativeForm
         initialInitiative={initiative}
+        playerName={name}
         modifyInitiative={emitModificationOfInitiative}
       />
     );

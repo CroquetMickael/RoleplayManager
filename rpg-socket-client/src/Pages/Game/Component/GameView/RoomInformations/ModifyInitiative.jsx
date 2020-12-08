@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { ErrorForm } from "../../../../../Shared/Component/ErrorForm/ErrorForm";
 
-const ModifyInitiativeForm = ({ modifyInitiative, initialInitiative }) => {
+const ModifyInitiativeForm = ({
+  modifyInitiative,
+  initialInitiative,
+  playerName,
+}) => {
   const { handleSubmit, register, errors } = useForm();
-  const [localInitiative, setLocalInitiative] = useState(
-    initialInitiative
-  );
+  const [localInitiative, setLocalInitiative] = useState(initialInitiative);
 
   const addChangePasswordCall = ({ initiative }) => {
     modifyInitiative(initiative);
@@ -36,7 +38,7 @@ const ModifyInitiativeForm = ({ modifyInitiative, initialInitiative }) => {
         className="flex items-center justify-center w-full h-8 p-2 text-white bg-blue-300 rounded hover:bg-blue-500"
         type="submit"
       >
-        Modify Initiative
+        Modify Initiative of {playerName}
       </button>
     </form>
   );
