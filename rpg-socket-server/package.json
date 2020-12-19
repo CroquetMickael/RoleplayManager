@@ -21,7 +21,7 @@
     "@adonisjs/assembler": "^3.1.0",
     "@adonisjs/core": "^5.0.4-preview-rc-2",
     "@adonisjs/lucid": "^9.0.3",
-    "@adonisjs/repl": "^1.1.5",
+    "@adonisjs/repl": "^1.1.6",
     "@types/socket.io": "^2.1.11",
     "jsonschema": "^1.4.0",
     "luxon": "^1.25.0",
