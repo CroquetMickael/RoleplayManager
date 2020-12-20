@@ -18,7 +18,7 @@
     "youch-terminal": "^1.0.1"
   },
   "dependencies": {
-    "@adonisjs/assembler": "^3.1.0",
+    "@adonisjs/assembler": "^3.1.1",
     "@adonisjs/core": "^5.0.4-preview-rc-2",
     "@adonisjs/lucid": "^9.0.3",
     "@adonisjs/repl": "^1.1.5",
