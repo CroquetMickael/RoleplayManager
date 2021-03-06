@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPen } from "react-icons/fa";
 import { Card } from "../../../../../Shared/Component/Card/Card";
 import { AddMonsterForm } from "./AddMonsterForm";
@@ -11,14 +11,13 @@ const RoomInformation = ({
   addMonster,
   logs,
 }) => {
-  const messagesEndRef = useRef(null);
+  const [log, setLog] = useState(logs);
 
-  const scrollToBottom = () => {
-    messagesEndRef?.current.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(scrollToBottom, [logs]);
-
+  useEffect(() => {
+    if (logs != null) {
+      setLog(logs.reverse());
+    }
+  }, [logs]);
   return (
     <div className="w-full border-r border-gray-400 xl:w-1/4 md:w-1/3 md:col-auto">
       <div className="w-full p-2 border-b border-gray-400">
@@ -43,7 +42,7 @@ const RoomInformation = ({
       <div className="relative mx-2 md:block dark:text-white">
         <p className="py-2 text-2xl text-black dark:text-gray-200">Logs</p>
         <div className="hidden w-full p-2 overflow-y-auto text-black border md:block max-h-96 h-96 dark:bg-gray-800 dark:text-white">
-          {logs?.map((log, key) => (
+          {log?.reverse().map((log, key) => (
             <p
               className="inline-block w-full text-black dark:text-white"
               key={key}
@@ -60,7 +59,6 @@ const RoomInformation = ({
               : {log.log}
             </p>
           ))}
-          <div ref={messagesEndRef} />
         </div>
         <div className="grid grid-cols-1 2xl:grid-cols-2">
           {isOwner ? (
