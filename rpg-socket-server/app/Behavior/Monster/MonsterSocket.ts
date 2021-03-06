@@ -16,6 +16,7 @@ export class MonsterSocket {
         roomId,
         monsterName,
         monsterInitiative,
+        isNPC
       } = Information
       const room = await Room.find(roomId)
       if (room && playerId === room.ownerId) {
@@ -23,6 +24,7 @@ export class MonsterSocket {
           name: monsterName,
           initiative: Number(monsterInitiative),
           roomId: room.id,
+          isNPC
         })
         room.lastUsedDate = DateTime.utc()
         await room.save()

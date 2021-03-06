@@ -4,9 +4,8 @@ import { ErrorForm } from "../../../../../Shared/Component/ErrorForm/ErrorForm";
 
 const AddMonsterForm = ({ addMonster }) => {
   const { handleSubmit, register, errors } = useForm();
-
-  const addChangePasswordCall = ({ name, initiative }) => {
-    addMonster(name, initiative);
+  const addChangePasswordCall = ({ name, initiative, isNPC }) => {
+    addMonster(name, initiative, isNPC);
   };
   return (
     <form
@@ -18,7 +17,7 @@ const AddMonsterForm = ({ addMonster }) => {
       </label>
       <input
         name="name"
-        className="p-2 mb-1 text-black placeholder-black border border-black rounded-lg" 
+        className="p-2 mb-1 text-black placeholder-black border border-black rounded-lg"
         placeholder="Monster name"
         ref={register({
           required: { message: "name is required", value: true },
@@ -35,9 +34,19 @@ const AddMonsterForm = ({ addMonster }) => {
         type="number"
         ref={register({
           required: { message: "Initiative is required", value: true },
-          min: {value: 0, message: "Initiative should be at least 0"}
+          min: { value: 0, message: "Initiative should be at least 0" },
         })}
-      />    
+      />
+      <label>
+        <input
+          name="isNPC"
+          className="p-2 mb-1 text-black placeholder-black border border-black rounded-lg"
+          placeholder="check if is not a monster but NPC"
+          type="checkbox"
+          ref={register()}
+        />{" "}
+        is this monster an NPC ?
+      </label>
       {errors.initiative && <ErrorForm>{errors.initiative.message}</ErrorForm>}
       <button
         className="flex items-center justify-center w-full h-8 p-2 text-white bg-blue-300 rounded hover:bg-blue-500"

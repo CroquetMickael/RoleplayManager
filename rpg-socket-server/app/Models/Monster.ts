@@ -20,6 +20,9 @@ export default class Monster extends BaseModel {
   @column()
   public initiative: number
 
+  @column({columnName: "isNPC"})
+  public isNPC: Boolean
+
   @column({ columnName: 'room_id', serializeAs: 'roomId' })
   public roomId: number
 
