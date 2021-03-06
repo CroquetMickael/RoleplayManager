@@ -19,7 +19,7 @@ const Initiative = memo(
                 leftSidetext={
                   <p
                     className={`${
-                      initiative.isMonster ? "text-red-600" : "text-green-600"
+                      initiative.isMonster ? "text-red-600" : initiative.isNPC ? "text-gray-600" : "text-green-600"
                     }`}
                   >
                     {initiative.name}

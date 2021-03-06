@@ -51,7 +51,8 @@ const Game = () => {
           id: monster.id,
           name: monster.name,
           initiative: monster.initiative,
-          isMonster: true,
+          isMonster: monster.is_npc ? false : true,
+          isNPC: monster.is_npc
         });
       });
       const sortedInitiative = initiativeArray.sort((a, b) => {
@@ -170,12 +171,13 @@ const Game = () => {
     );
   }
 
-  const addMonster = (monsterName, monsterInitiative) => {
+  const addMonster = (monsterName, monsterInitiative, isNPC) => {
     socket.emit("addMonster", {
       playerId,
       roomId: roomInformation.id,
       monsterName,
       monsterInitiative,
+      isNPC: isNPC
     });
   };
 
